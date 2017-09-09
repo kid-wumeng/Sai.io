@@ -11,7 +11,7 @@ let app = new Sai.App({
 
 | Param | Type | Default |
 | --- | --- | --- |
-| port | ``number`` | 80 |
+| port | <code>number</code> | 80 |
 
 ### app.io(io) ⇒
 
