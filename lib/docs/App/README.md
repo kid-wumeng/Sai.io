@@ -9,9 +9,9 @@ let app = new Sai.App({
 })
 ```
 
-| Param | Type | Default |
+| Param | Type | Default | Description |
 | --- | --- | --- |
-| port | <code>number</code> | 80 |
+| port | <code>number</code> | 80 | 端口 |
 
 ### app.io(io) ⇒
 
