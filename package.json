@@ -1,0 +1,11 @@
+{
+  "name": "sai-io",
+  "version": "0.1.0",
+  "scripts": {
+    "build-docs": "./node_modules/.bin/gitbook build lib/docs docs",
+    "serve-docs": "./node_modules/.bin/gitbook serve lib/docs docs"
+  },
+  "devDependencies": {
+    "gitbook-cli": "^2.3.2"
+  }
+}
