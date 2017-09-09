@@ -2,7 +2,7 @@
 <!DOCTYPE HTML>
 <html lang="" >
     <head>
-        <title>Sai.App · Sai</title>
+        <title>MongoDB · Sai</title>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -50,7 +50,7 @@
 
     
     
-    <link rel="prev" href="../" />
+    <link rel="prev" href="App.html" />
     
 
     </head>
@@ -90,15 +90,14 @@
             
 
             
-            <ul class="articles">
-                
+        </li>
     
-        <li class="chapter active" data-level="1.1.1" data-path="./">
+        <li class="chapter " data-level="1.2" data-path="App.html">
             
-                <a href="./">
+                <a href="App.html">
             
                     
-                    Sai.App
+                    App
             
                 </a>
             
@@ -106,8 +105,16 @@
             
         </li>
     
+        <li class="chapter active" data-level="1.3" data-path="MongoDB.html">
+            
+                <a href="MongoDB.html">
+            
+                    
+                    MongoDB
+            
+                </a>
+            
 
-            </ul>
             
         </li>
     
@@ -141,7 +148,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href=".." >Sai.App</a>
+        <a href=".." >MongoDB</a>
     </h1>
 </div>
 
@@ -156,20 +163,85 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="saiapp">Sai.App</h1>
-<p><strong><a href="#config">app.config( name, value )</a></strong>     - &#x914D;&#x7F6E;&#x9009;&#x9879;</p>
-<p><strong><a href="#use">app.use( middleware )</a></strong>            - &#x4F7F;&#x7528;&#x4E2D;&#x95F4;&#x4EF6;</p>
-<p><strong><a href="#use">app.mount( name, value )</a></strong>         - &#x6302;&#x8F7D;&#x4E0A;&#x4E0B;&#x6587;&#x5C5E;&#x6027;</p>
-<p><strong><a href="#io">app.io( name, fn )</a></strong>                - &#x6CE8;&#x518C;IO</p>
-<p><strong><a href="#service">app.service( path, io, opt )</a></strong> - &#x6CE8;&#x518C;RPC&#x670D;&#x52A1;</p>
-<p><strong><a href="#GET">app.GET( path, io, opt )</a></strong>         - &#x6CE8;&#x518C;GET&#x670D;&#x52A1;</p>
-<p><strong><a href="#POST">app.POST( path, io, opt )</a></strong>       - &#x6CE8;&#x518C;POST&#x670D;&#x52A1;</p>
-<p><strong><a href="#PUT">app.PUT( path, io, opt )</a></strong>         - &#x6CE8;&#x518C;PUT&#x670D;&#x52A1;</p>
-<p><strong><a href="#PATCH">app.PATCH( path, io, opt )</a></strong>     - &#x6CE8;&#x518C;PATCH&#x670D;&#x52A1;</p>
-<p><strong><a href="#DELETE">app.DELETE( path, io, opt )</a></strong>   - &#x6CE8;&#x518C;DELETE&#x670D;&#x52A1;</p>
-<h5 id="config"><code>app.config(name, value)</code> </h5>
-<pre><code class="lang-js">app.config(<span class="hljs-string">&apos;port&apos;</span>, <span class="hljs-number">80</span>)
-</code></pre>
+                                <h1 id="saimongodb">Sai.MongoDB</h1>
+<h2 id="mongodb">MongoDB</h2>
+<table>
+<thead>
+<tr>
+<th>&#x65B9;&#x6CD5;&#x539F;&#x578B;</th>
+<th>&#x63CF;&#x8FF0;</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#col">col(name)</a></td>
+<td>&#x9009;&#x62E9;&#x96C6;&#x5408;</td>
+</tr>
+</tbody>
+</table>
+<h2 id="collection">Collection</h2>
+<table>
+<thead>
+<tr>
+<th>&#x65B9;&#x6CD5;&#x539F;&#x578B;</th>
+<th>&#x63CF;&#x8FF0;</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#findOne">findOne(query, opt)</a></td>
+<td>&#x5355;&#x6587;&#x6863;&#x67E5;&#x8BE2;</td>
+</tr>
+<tr>
+<td><a href="#find">find(query, opt)</a></td>
+<td>&#x591A;&#x6587;&#x6863;&#x67E5;&#x8BE2;</td>
+</tr>
+<tr>
+<td><a href="#count">count(query, opt)</a></td>
+<td>&#x6587;&#x6863;&#x6570;&#x91CF;&#x7EDF;&#x8BA1;</td>
+</tr>
+<tr>
+<td><a href="#insert">insert(data, opt)</a></td>
+<td>&#x5355;&#x6587;&#x6863;&#x6DFB;&#x52A0;</td>
+</tr>
+<tr>
+<td><a href="#insertMany">insertMany(data, opt)</a></td>
+<td>&#x591A;&#x6587;&#x6863;&#x6DFB;&#x52A0;</td>
+</tr>
+<tr>
+<td><a href="#update">update(query, data, opt)</a></td>
+<td>&#x5355;&#x6587;&#x6863;&#x66F4;&#x65B0;</td>
+</tr>
+<tr>
+<td><a href="#updateMany">updateMany(query, data, opt)</a></td>
+<td>&#x591A;&#x6587;&#x6863;&#x66F4;&#x65B0;</td>
+</tr>
+<tr>
+<td><a href="#remove">remove(query, opt)</a></td>
+<td>&#x5355;&#x6587;&#x6863;&#x8F6F;&#x5220;&#x9664;</td>
+</tr>
+<tr>
+<td><a href="#removeMany">removeMany(query, opt)</a></td>
+<td>&#x591A;&#x6587;&#x6863;&#x8F6F;&#x5220;&#x9664;</td>
+</tr>
+<tr>
+<td><a href="#removeHard">removeHard(query, opt)</a></td>
+<td>&#x5355;&#x6587;&#x6863;&#x786C;&#x5220;&#x9664;</td>
+</tr>
+<tr>
+<td><a href="#removeManyHard">removeManyHard(query, opt)</a></td>
+<td>&#x591A;&#x6587;&#x6863;&#x786C;&#x5220;&#x9664;</td>
+</tr>
+<tr>
+<td><a href="#restore">restore(query, opt)</a></td>
+<td>&#x5355;&#x6587;&#x6863;&#x6062;&#x590D;</td>
+</tr>
+<tr>
+<td><a href="#restoreMany">restoreMany(query, opt)</a></td>
+<td>&#x591A;&#x6587;&#x6863;&#x6062;&#x590D;</td>
+</tr>
+</tbody>
+</table>
 
                                 
                                 </section>
@@ -197,7 +269,7 @@
 
             
                 
-                <a href="../" class="navigation navigation-prev navigation-unique" aria-label="Previous page: 概述">
+                <a href="App.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: App">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
@@ -209,7 +281,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Sai.App","level":"1.1.1","depth":2,"previous":{"title":"概述","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[{"title":"Sai.App","level":"1.1.1","depth":2,"path":"Sai.App/README.md","ref":"Sai.App/README.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["livereload"],"styles":{"website":"book.css"},"pluginsConfig":{"livereload":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Sai","gitbook":"3.0.0"},"file":{"path":"Sai.App/README.md","mtime":"2017-09-09T04:41:02.000Z","type":"markdown"},"gitbook":{"version":"3.0.0","time":"2017-09-09T04:34:52.508Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"MongoDB","level":"1.3","depth":1,"previous":{"title":"App","level":"1.2","depth":1,"path":"API/App.md","ref":"API/App.md","articles":[]},"dir":"ltr"},"config":{"plugins":["livereload"],"styles":{"website":"book.css"},"pluginsConfig":{"livereload":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Sai","gitbook":"3.0.0"},"file":{"path":"API/MongoDB.md","mtime":"2017-09-09T08:10:15.000Z","type":"markdown"},"gitbook":{"version":"3.0.0","time":"2017-09-09T08:09:01.615Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

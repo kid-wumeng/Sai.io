@@ -5,3 +5,11 @@ html{
 .markdown-section table{
   width: auto;
 }
+
+.markdown-section h2,
+.markdown-section h3,
+.markdown-section h4,
+.markdown-section h5,
+.markdown-section h6{
+  font-size: 16px;
+}
