@@ -9,8 +9,10 @@
     "gitbook-cli": "^2.3.2"
   },
   "dependencies": {
+    "axios": "^0.16.2",
     "coffeescript": "^2.0.0-beta5",
     "colors": "^1.1.2",
-    "koa": "^2.3.0"
+    "koa": "^2.3.0",
+    "koa-bodyparser": "^4.2.0"
   }
 }
