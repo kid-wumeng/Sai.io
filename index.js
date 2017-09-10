@@ -17,12 +17,14 @@ async function sleep(timeout) {
 }
 
 
-app.io('Book.findOne', async ({id})=>{
+app.io('Book.findOne', async ({id, createDate})=>{
+  console.log(createDate.getFullYear());
   return '书的id:' + id
 })
 
 
 app.service('Book.findOne', 'Book.findOne')
+app.mount('myname', 'kid')
 
 
 app.start()
@@ -30,7 +32,8 @@ app.start()
 
 axios.post('http://localhost:9000/Book.findOne', {
   data: {
-    id: 99
+    id: 99,
+    createDate: app.encodeDate(new Date()),
   }
 }).then((res)=>{
   console.log(res.data);

@@ -1,6 +1,5 @@
-Koa        = require('koa')
-bodyParser = require('koa-bodyparser')
-error      = require('../error')
+Koa   = require('koa')
+error = require('../error')
 
 
 
@@ -59,7 +58,7 @@ module.exports = class App
 
 
 
-  __callService: (name, data) =>
+  callService: (name, data) =>
     service = @services[name]
     if(service)
       return @call(service.io, data)
@@ -69,8 +68,9 @@ module.exports = class App
 
 
   start: (message) =>
-    @__useBodyParser()
-    @__useCallback()
+    @koa.use(@getRequestBody)
+    @koa.use(@decodeRequestBody)
+    @koa.use(@callback)
     @koa.listen(@port)
 
     message ?= "sai-io app:#{@port} start ~ !"
@@ -78,17 +78,59 @@ module.exports = class App
 
 
 
-  __useBodyParser: =>
-    @koa.use(bodyParser({
-      enableTypes: ['json']
-      # @TODO 可配置化
-      jsonLimit: '5mb'
-    }))
+  getRequestBody: (ctx, next) =>
+    ctx.requestBody = ''
+    ctx.req.on('data', (chunk) => ctx.requestBody += chunk)
+    await new Promise((resolve) => ctx.req.on('end', resolve))
+    await next()
 
 
 
-  __useCallback: =>
-    @koa.use (ctx) =>
-      service_name = ctx.path.slice(1)
-      body = ctx.request.body
-      ctx.body = await @__callService(service_name, body.data)
+  decodeRequestBody: (ctx, next) =>
+    ctx.requestBody = JSON.parse(ctx.requestBody, @decodeRequestBodyEach.bind(this))
+    await next()
+
+
+
+  decodeRequestBodyEach: (key, value) =>
+    dateRegExp = /^\/Date\(\d+\)\/$/
+    fileRegExp = /^\/File\(.+\)\/$/
+    if dateRegExp.test(value) then return @decodeDate(value)
+    if fileRegExp.test(value) then return @decodeFile(value)
+    return value
+
+
+
+  encodeDate: (date) =>
+    timeStamp = date.getTime()
+    return "/Date(#{timeStamp})/"
+
+
+
+  decodeDate: (dateString) =>
+    timeStamp = dateString.slice(6, dateString.length-2)
+    timeStamp = parseInt(timeStamp)
+    return new Date(timeStamp)
+
+
+
+  encodeFile: (buffer) =>
+    base64 = buffer.toString('base64')
+    return "/File(#{base64})/"
+
+
+
+  decodeFile: (fileString) =>
+    base64 = fileString.slice(6, fileString.length-2)
+    return new Buffer(base64, 'base64')
+
+
+
+  callback: (ctx) =>
+    service_name = @parseServiceName(ctx)
+    ctx.body = await @callService(service_name, ctx.requestBody.data)
+
+
+
+  parseServiceName: (ctx) =>
+    return ctx.path.slice(1)
