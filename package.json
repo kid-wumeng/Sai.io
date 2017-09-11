@@ -13,6 +13,7 @@
     "coffeescript": "^2.0.0-beta5",
     "colors": "^1.1.2",
     "koa": "^2.3.0",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "mongodb": "^2.2.31"
   }
 }

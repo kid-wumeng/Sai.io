@@ -40,6 +40,7 @@ helper = require('../helper')
 
 
 module.exports = class App
+
   constructor: (options={}) ->
     @port     = options.port
     @ios      = {}
@@ -49,191 +50,191 @@ module.exports = class App
 
 
 
-### @PUBLIC ###
-# 配置app
-##
-App.prototype.config: (key, value) =>
-  @[key] = value
+  ### @PUBLIC ###
+  # 配置app
+  ##
+  config: (key, value) =>
+    @[key] = value
 
 
 
-### @PUBLIC ###
-# 注册io
-##
-App.prototype.io: (name, fn) =>
-  @ios[name] = fn
+  ### @PUBLIC ###
+  # 注册io
+  ##
+  io: (name, fn) =>
+    @ios[name] = fn
 
 
 
-### @PUBLIC ###
-# 调用io
-##
-App.prototype.call: (name, data={}, ctx) =>
-  io = @ios[name]
-  if(io)
-    ctx = @formatContext(ctx)
-    ctx.ioChain.push(name)
-    ctx.ioStack.push(name)
-    result = io.call(ctx, data)
-    ctx.ioStack.pop()
-    return result
-  else
-    ioNotFound({name})
-
-
-
-App.prototype.formatContext: (ctx={}) =>
-  Object.assign(ctx, @mounts)
-  ctx.call    = @callInContext.bind(ctx, @ios)
-  ctx.throw   = @throwInContext
-  ctx.ioChain = []
-  ctx.ioStack = []
-  return ctx
-
-
-
-App.prototype.callInContext: (ios, name, data={}) ->
-  io = ios[name]
-  if(io)
-    @ioChain.push(name)
-    @ioStack.push(name)
-    result = io.call(@, data)
-    @ioStack.pop()
-    return result
-  else
-    ioNotFound({name})
-
-
-
-App.prototype.throwInContext: (args...) ->
-  a1 = args[0]
-  a2 = args[1]
-  a3 = args[2]
-  switch args.length
-    when 1
-      helper.throw({message: a1})
-    when 2
-      switch
-        when _.isNumber(a1) and _.isString(a2)      then helper.throw({status: a1,  message: a2})
-        when _.isString(a1) and _.isPlainObject(a2) then helper.throw({message: a1, info: a2})
-    when 3
-      helper.throw({status: a1, message: a2, info: a3})
+  ### @PUBLIC ###
+  # 调用io
+  ##
+  call: (name, data={}, ctx) =>
+    io = @ios[name]
+    if(io)
+      ctx = @formatContext(ctx)
+      ctx.ioChain.push(name)
+      ctx.ioStack.push(name)
+      result = io.call(ctx, data)
+      ctx.ioStack.pop()
+      return result
     else
-      helper.throw()
+      ioNotFound({name})
 
 
 
-### @PUBLIC ###
-# 注册服务
-##
-App.prototype.service: (name, io) =>
-  @services[name] =
-    io: io
+  formatContext: (ctx={}) =>
+    Object.assign(ctx, @mounts)
+    ctx.call    = @callInContext.bind(ctx, @ios)
+    ctx.throw   = @throwInContext
+    ctx.ioChain = []
+    ctx.ioStack = []
+    return ctx
 
 
 
-App.prototype.callService: (name, data, ctx) =>
-  service = @services[name]
-  if(service)
-    return @call(service.io, data, ctx)
-  else
-    serviceNotFound({name})
+  callInContext: (ios, name, data={}) ->
+    io = ios[name]
+    if(io)
+      @ioChain.push(name)
+      @ioStack.push(name)
+      result = io.call(@, data)
+      @ioStack.pop()
+      return result
+    else
+      ioNotFound({name})
 
 
 
-### @PUBLIC ###
-# 挂载属性到ctx上
-##
-App.prototype.mount: (key, value) =>
-  @mounts[key] = value
+  throwInContext: (args...) ->
+    a1 = args[0]
+    a2 = args[1]
+    a3 = args[2]
+    switch args.length
+      when 1
+        helper.throw({message: a1})
+      when 2
+        switch
+          when _.isNumber(a1) and _.isString(a2)      then helper.throw({status: a1,  message: a2})
+          when _.isString(a1) and _.isPlainObject(a2) then helper.throw({message: a1, info: a2})
+      when 3
+        helper.throw({status: a1, message: a2, info: a3})
+      else
+        helper.throw()
 
 
 
-### @PUBLIC ###
-# 启动app
-##
-App.prototype.start: (message) =>
-  @koa.use(@decodeServiceName)
-  @koa.use(@getRequestBody)
-  @koa.use(@decodeRequestBody)
-  @koa.use(@encodeResponseBody)
-  @koa.use(@setResponseBody)
-  @koa.use(@callback)
-
-  @koa.listen(@port)
-  message ?= "sai-io app:#{@port} start ~ !"
-  console.log message.green
+  ### @PUBLIC ###
+  # 注册服务
+  ##
+  service: (name, io) =>
+    @services[name] =
+      io: io
 
 
 
-App.prototype.decodeServiceName: (ctx, next) =>
-  ctx.serviceName = ctx.path.slice(1)
-  await next()
+  callService: (name, data, ctx) =>
+    service = @services[name]
+    if(service)
+      return @call(service.io, data, ctx)
+    else
+      serviceNotFound({name})
 
 
 
-App.prototype.getRequestBody: (ctx, next) =>
-  ctx.requestBody = ''
-  ctx.req.on('data', (chunk) => ctx.requestBody += chunk)
-  await new Promise((resolve) => ctx.req.on('end', resolve))
-  await next()
+  ### @PUBLIC ###
+  # 挂载属性到ctx上
+  ##
+  mount: (key, value) =>
+    @mounts[key] = value
 
 
 
-App.prototype.decodeRequestBody: (ctx, next) =>
-  body = ctx.requestBody
-  body = JSON.parse(body)
-  helper.decodeBody(body)
-  ctx.responseBody = body
-  await next()
+  ### @PUBLIC ###
+  # 启动app
+  ##
+  start: (message) =>
+    @koa.use(@decodeServiceName)
+    @koa.use(@getRequestBody)
+    @koa.use(@decodeRequestBody)
+    @koa.use(@encodeResponseBody)
+    @koa.use(@setResponseBody)
+    @koa.use(@callback)
+
+    @koa.listen(@port)
+    message ?= "sai-io app:#{@port} start ~ !"
+    console.log message.green
 
 
 
-App.prototype.encodeResponseBody: (ctx, next) =>
-  await next()
-  helper.encodeBody(ctx.responseBody)
+  decodeServiceName: (ctx, next) =>
+    ctx.serviceName = ctx.path.slice(1)
+    await next()
 
 
 
-App.prototype.setResponseBody: (ctx, next) =>
-  ctx.responseBody = {}
-  await next()
-  ctx.body = ctx.responseBody
+  getRequestBody: (ctx, next) =>
+    ctx.requestBody = ''
+    ctx.req.on('data', (chunk) => ctx.requestBody += chunk)
+    await new Promise((resolve) => ctx.req.on('end', resolve))
+    await next()
 
 
 
-App.prototype.callback: (ctx) =>
-  try
-    name = ctx.serviceName
-    data = ctx.requestBody.data
-    data = await @callService(name, data, ctx)
-    ctx.responseBody.data = data
-  catch error
-    @catch(ctx, error)
+  decodeRequestBody: (ctx, next) =>
+    body = ctx.requestBody
+    body = JSON.parse(body)
+    helper.decodeBody(body)
+    ctx.responseBody = body
+    await next()
 
 
 
-App.prototype.catch: (ctx, error) =>
-  if(error.bySai)
-    # bySai标志位为true，表示这个error：
-    # 1. 由Sai系统抛出
-    # 2. 由开发者调用@throw抛出
-    ctx.status = error.status
-    ctx.responseBody.error =
-      code:        error.code
-      message:     error.message
-      info:        error.info
-      serviceName: ctx.serviceName
-      ioChain:     ctx.ioChain
-      ioStack:     ctx.ioStack
-  else
-    # 否则，是由开发者使用throw关键词抛出
-    ctx.status = 400
-    ctx.responseBody.error =
-      message:     error.toString()
-      serviceName: ctx.serviceName
-      ioChain:     ctx.ioChain
-      ioStack:     ctx.ioStack
+  encodeResponseBody: (ctx, next) =>
+    await next()
+    helper.encodeBody(ctx.responseBody)
+
+
+
+  setResponseBody: (ctx, next) =>
+    ctx.responseBody = {}
+    await next()
+    ctx.body = ctx.responseBody
+
+
+
+  callback: (ctx) =>
+    try
+      name = ctx.serviceName
+      data = ctx.requestBody.data
+      data = await @callService(name, data, ctx)
+      ctx.responseBody.data = data
+    catch error
+      @catch(ctx, error)
+
+
+
+  catch: (ctx, error) =>
+    if(error.bySai)
+      # bySai标志位为true，表示这个error：
+      # 1. 由Sai系统抛出
+      # 2. 由开发者调用@throw抛出
+      ctx.status = error.status
+      ctx.responseBody.error =
+        code:        error.code
+        message:     error.message
+        info:        error.info
+        serviceName: ctx.serviceName
+        ioChain:     ctx.ioChain
+        ioStack:     ctx.ioStack
+    else
+      # 否则，是由开发者使用throw关键词抛出
+      ctx.status = 400
+      ctx.responseBody.error =
+        message:     error.toString()
+        serviceName: ctx.serviceName
+        ioChain:     ctx.ioChain
+        ioStack:     ctx.ioStack
 
 
 

@@ -1,5 +1,6 @@
 require('colors')
 
 
-exports.config = require('./config')
-exports.App    = require('./App')
+exports.config  = require('./config')
+exports.App     = require('./App')
+exports.MongoDB = require('./MongoDB')
