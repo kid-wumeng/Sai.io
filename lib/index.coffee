@@ -1,6 +1,6 @@
 require('colors')
 
 
-module.exports = {
-  App: require('./App')
-}
+
+exports.config = require('./config')
+exports.App    = require('./App')

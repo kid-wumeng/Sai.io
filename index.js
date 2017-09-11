@@ -4,6 +4,10 @@ let axios = require('axios')
 let Sai = require('./lib')
 let helper = require('./lib/helper')
 
+
+Sai.config.language = 'zh'
+
+
 let app = new Sai.App({
   port: 9000
 })
@@ -19,7 +23,7 @@ async function sleep(timeout) {
 
 
 app.io('Book.findOne', function(data){
-  this.call('Book.findOne6')
+  this.call('Book.findOne2')
   return {lastDate: new Date()}
 })
 

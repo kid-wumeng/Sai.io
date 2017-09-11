@@ -1,18 +1,34 @@
-_ = require('lodash')
+###
+# 综合辅助工具库，放在这里的方法需满足2个基本条件：
+# 1. 两个以上模块会用到
+# 2. 弱逻辑：执行过程不依赖任何模块
+#
+# Sai的理念是模块之间无依存关系，即接近零耦合（app.mount可能是唯一的嵌合点）
+# 但helper会供大多数模块使用，为了代码安全，这些方法严格设定为纯粹的静态方法
+###
+
+
+
+_      = require('lodash')
+config = require('./config')
 
 
 
 ### @PUBLIC ###
+# 抛出异常
 ##
 exports.throw = ({status, code, message, en_message, zh_message, info, stack}) ->
-  error            = new Error()
-  error.bySai      = true
-  error.status     = status     ? 500
-  error.code       = code
-  error.message    = message
-  error.en_message = en_message
-  error.zh_message = zh_message
-  error.info       = info
+  error        = new Error()
+  error.bySai  = true
+  error.status = status ? 500
+  error.code   = code
+  error.info   = info
+
+  if(!message)
+    switch(config.language)
+      when 'en' then error.message = en_message
+      when 'zh' then error.message = zh_message
+
   throw error
 
 
