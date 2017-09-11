@@ -2,6 +2,7 @@ require('coffeescript/register')
 let axios = require('axios')
 
 let Sai = require('./lib')
+let helper = require('./lib/helper')
 
 let app = new Sai.App({
   port: 9000
@@ -17,26 +18,38 @@ async function sleep(timeout) {
 }
 
 
-app.io('Book.findOne', async ({id, createDate})=>{
-  console.log(createDate.getFullYear());
-  return '书的id:' + id
+app.io('Book.findOne', function(data){
+  this.call('Book.findOne6')
+  return {lastDate: new Date()}
 })
+
+app.io('Book.findOne2', function(data){
+  return {lastDate: new Date()}
+})
+
 
 
 app.service('Book.findOne', 'Book.findOne')
 app.mount('myname', 'kid')
 
 
+
 app.start()
 
 
+data = {
+  id: 99,
+  createDate: new Date(),
+}
+
+helper.encodeBody(data)
+
 axios.post('http://localhost:9000/Book.findOne', {
-  data: {
-    id: 99,
-    createDate: app.encodeDate(new Date()),
-  }
+  data: data
 }).then((res)=>{
-  console.log(res.data);
+}).catch((error)=>{
+  console.log(error.response.status);
+  console.log(error.response.data.error);
 })
 
 
