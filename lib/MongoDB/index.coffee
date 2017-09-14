@@ -1,5 +1,7 @@
+_          = require('lodash')
 mongodb    = require('mongodb')
 Collection = require('./Collection')
+JoinQuery  = require('./JoinQuery')
 helper     = require('../helper')
 
 
@@ -15,6 +17,7 @@ module.exports = class MongoDB
     @idStore = options.idStore
     @aliases = {}
     @db      = null
+    @cols    = {}
 
 
 
@@ -73,7 +76,6 @@ module.exports = class MongoDB
 
 
 
-
   ### @PUBLIC ###
   # 关闭数据库链接
   ##
@@ -87,11 +89,53 @@ module.exports = class MongoDB
   ##
   col: (name) =>
     name = @aliases[name] ? name
-    return new Collection({
-      db: @db
-      idStore: @idStore
-      name: name
+    col  = @cols[name]
+
+    if !col
+      col = new Collection({
+        db:      @db
+        idStore: @idStore
+        name:    name
+      })
+      @cols[name] = col
+
+    return col
+
+
+  ### @PUBLIC ###
+  # 创建 DBRef 对象
+  ##
+  DBRef: (col, doc={}) =>
+    if !@validObjectID(doc?._id)
+      DBRef_idInvalid({doc})
+
+    return{
+      $ref: col
+      $id:  doc._id
+      $db:  @name
+    }
+
+
+
+  ### @PUBLIC ###
+  # 验证_id是否有效
+  ##
+  validObjectID: (_id) =>
+    return mongodb.ObjectID.isValid(_id)
+
+
+
+  ### @PUBLIC ###
+  # 验证_id是否有效
+  ##
+  join: (docs, key, options) =>
+    joinQuery = new JoinQuery({
+      mongo: @
+      docs: docs
+      key: key
+      options: options
     })
+    await joinQuery.execule()
 
 
 
@@ -103,4 +147,13 @@ idOverflow = ({col, lastID, idStore, lastIDInStore}) =>
     code: 12002
     zh_message: "集合`#{col}`的id超出了idStore的记录，#{col}: #{lastID}，#{idStore}.#{col}: #{lastIDInStore}，请核验后校准"
     info: {col, lastID, lastIDInStore}
+  })
+
+
+
+DBRef_idInvalid = ({doc}) =>
+  helper.throw({
+    code: 12003
+    zh_message: "DBRef 生成失败，执行 mongo.DBRef(colname, doc) 时发现 doc._id 不是有效的 MongoDB ObjectID"
+    info: {doc}
   })

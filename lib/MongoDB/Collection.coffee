@@ -66,6 +66,8 @@ module.exports = class Collection
 
 
   formatOptions: (options={}) =>
+    if _.isString(options)
+      options = keys: options
     # options也许会被开发者复用
     # 为了避免副作用，每次都应该生成新副本
     options = Object.assign({}, options)
@@ -204,7 +206,7 @@ module.exports = class Collection
   ### @PUBLIC ###
   # 单文档软删除
   ##
-  remove: (query) ->
+  remove: (query) =>
     count = await @update(query, {
       removeDate: new Date()
     })
@@ -215,7 +217,7 @@ module.exports = class Collection
   ### @PUBLIC ###
   # 多文档软删除
   ##
-  removeMany: (query) ->
+  removeMany: (query) =>
     count = await @updateMany(query, {
       removeDate: new Date()
     })
@@ -226,7 +228,7 @@ module.exports = class Collection
   ### @PUBLIC ###
   # 单文档硬删除
   ##
-  delete: (query, options) ->
+  delete: (query, options) =>
     query  = @formatQuery(query, options)
     result = await @col.deleteOne(query)
     return result.deletedCount
@@ -236,7 +238,7 @@ module.exports = class Collection
   ### @PUBLIC ###
   # 多文档硬删除
   ##
-  deleteMany: (query, options) ->
+  deleteMany: (query, options) =>
     query  = @formatQuery(query, options)
     result = await @col.deleteMany(query)
     return result.deletedCount
@@ -246,7 +248,7 @@ module.exports = class Collection
   ### @PUBLIC ###
   # 单文档软恢复
   ##
-  restore: (query) ->
+  restore: (query) =>
     count = await @update(query, {
       $unset: removeDate: 1
     },{
@@ -259,7 +261,7 @@ module.exports = class Collection
   ### @PUBLIC ###
   # 多文档软恢复
   ##
-  restoreMany: (query) ->
+  restoreMany: (query) =>
     count = await @updateMany(query, {
       $unset: removeDate: 1
     },{
@@ -272,6 +274,6 @@ module.exports = class Collection
   ### @PUBLIC ###
   # 聚合操作
   ##
-  aggregate: (pipeline, options) ->
+  aggregate: (pipeline, options) =>
     results = await @col.aggregate(pipeline, options).toArray()
     return results

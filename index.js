@@ -23,43 +23,13 @@ Sai.config.language = 'zh'
     await mongo.connect()
     mongo.alias('Subject', 'subjects')
 
+    let movies = await mongo.col('movies').find({}, 'name author')
+    await mongo.join(movies, 'author', 'id name');
 
-
-    // a = await mongo.col('movies').insertMany([
-    //   {name: 'k1'},
-    //   {name: 'k2'},
-    //   {name: 'k3'},
-    //   {name: 'k4'},
-    //   {name: 'k5'},
-    //   {name: 'k6'},
-    //   {name: 'k7'},
-    //   {name: 'k8'},
-    //   {name: 'k9'},
-    //   {name: 'k10'},
-    //   {name: 'k11'},
-    // ])
-
-    results = await mongo.col('Collection').aggregate([{
-      $match:{
-        'subject.id': 101,
-        'status': {
-          $in: ['doing', 'done']
-        },
-        'score': {$gt: 0}
-      }
-    },{
-      $group:{
-        '_id': '$subject.id',
-        'score':{
-          $avg : '$score'
-        }
-    }}])
-
-    console.log(results);
+    console.log(movies);
 
 
     await mongo.close()
-
 
   }catch(error){
     console.log(error);
