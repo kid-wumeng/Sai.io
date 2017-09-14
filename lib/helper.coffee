@@ -20,9 +20,9 @@ config = require('./config')
 exports.throw = ({status, code, message, en_message, zh_message, info, stack}) ->
   error        = new Error()
   error.bySai  = true
-  error.status = status ? 500
-  error.code   = code
-  error.info   = info
+  error.status = status if status
+  error.code   = code   if code
+  error.info   = info   if info
 
   if(!message)
     switch(config.language)

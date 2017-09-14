@@ -10,33 +10,60 @@ Sai.config.language = 'zh'
 
 
 
-;(async function(){
+;(async ()=>{
 
 
 
   let mongo = new Sai.MongoDB({
-    name: 'orz-world'
+    name: 'orz-world',
+    idStore: 'counter'
   })
 
   try{
     await mongo.connect()
+    mongo.alias('Subject', 'subjects')
 
-    options = {
-      size: 3,
-      fields: 'name'
-    }
 
-    subject = await mongo.col('Subject').find(8, options)
 
-    console.log(options);
+    // a = await mongo.col('movies').insertMany([
+    //   {name: 'k1'},
+    //   {name: 'k2'},
+    //   {name: 'k3'},
+    //   {name: 'k4'},
+    //   {name: 'k5'},
+    //   {name: 'k6'},
+    //   {name: 'k7'},
+    //   {name: 'k8'},
+    //   {name: 'k9'},
+    //   {name: 'k10'},
+    //   {name: 'k11'},
+    // ])
 
-    console.log(subject);
+    results = await mongo.col('Collection').aggregate([{
+      $match:{
+        'subject.id': 101,
+        'status': {
+          $in: ['doing', 'done']
+        },
+        'score': {$gt: 0}
+      }
+    },{
+      $group:{
+        '_id': '$subject.id',
+        'score':{
+          $avg : '$score'
+        }
+    }}])
+
+    console.log(results);
+
+
+    await mongo.close()
 
 
   }catch(error){
     console.log(error);
   }
-
 
 
 })()
