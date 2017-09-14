@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "axios": "^0.16.2",
+    "bluebird": "^3.5.0",
     "coffeescript": "^2.0.0-beta5",
     "colors": "^1.1.2",
     "koa": "^2.3.0",
     "lodash": "^4.17.4",
-    "mongodb": "^2.2.31"
+    "mongodb": "^2.2.31",
+    "redis": "^2.8.0"
   }
 }

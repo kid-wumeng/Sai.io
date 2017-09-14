@@ -22,15 +22,7 @@ module.exports = class MongoDB
 
 
   ### @PUBLIC ###
-  # 设置集合的别名
-  ##
-  alias: (origin, alias) =>
-    @aliases[alias] = origin
-
-
-
-  ### @PUBLIC ###
-  # 打开数据库
+  # 连接数据库
   ##
   connect: =>
     uri = @formatUri()
@@ -46,6 +38,14 @@ module.exports = class MongoDB
       return "mongodb://#{@user}:#{@pass}@#{@host}:#{@port}/#{@name}"
     else
       return "mongodb://#{@host}:#{@port}/#{@name}"
+
+
+
+  ### @PUBLIC ###
+  # 关闭数据库链接
+  ##
+  close: =>
+    await @db.close()
 
 
 
@@ -77,10 +77,10 @@ module.exports = class MongoDB
 
 
   ### @PUBLIC ###
-  # 关闭数据库链接
+  # 设置集合的别名
   ##
-  close: =>
-    await @db.close()
+  alias: (origin, alias) =>
+    @aliases[alias] = origin
 
 
 

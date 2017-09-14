@@ -14,22 +14,18 @@ Sai.config.language = 'zh'
 
 
 
-  let mongo = new Sai.MongoDB({
-    name: 'orz-world',
-    idStore: 'counter'
+  let redis = new Sai.Redis({
   })
 
   try{
-    await mongo.connect()
-    mongo.alias('Subject', 'subjects')
 
-    let movies = await mongo.col('movies').find({}, 'name author')
-    await mongo.join(movies, 'author', 'id name');
+    await redis.connect()
 
-    console.log(movies);
+    result = await redis.KEYS('*')
+    redis.close()
 
 
-    await mongo.close()
+
 
   }catch(error){
     console.log(error);
