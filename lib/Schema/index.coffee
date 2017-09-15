@@ -15,9 +15,12 @@ module.exports = class Schema
   ##
   check: (data, path) =>
     if(path)
-      data = _.get(data, path)
+      value = _.get(data, path)
+    else
+      value = data
+
     return new Checker({
-      data: data
+      value: value
       rules: @rules
     })
 
@@ -27,5 +30,4 @@ module.exports = class Schema
   # 制定规则
   ##
   rule: (name, callback) =>
-    throw new Error('自定义异常')
     @rules[name] = callback

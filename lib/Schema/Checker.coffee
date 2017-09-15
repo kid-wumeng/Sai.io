@@ -1,12 +1,12 @@
 _      = require('lodash')
 helper = require('../helper')
-
+error  = require('./error')
 
 
 module.exports = class Checker
 
   constructor: (options={}) ->
-    @data  = options.data
+    @value = options.value
     @rules = options.rules ? {}
 
 
@@ -15,13 +15,8 @@ module.exports = class Checker
   # 存在性验证
   ##
   must: (message) =>
-    if _.isNil(@data)
-      @throw({
-        code: 10001
-        message: message
-        zh_message: "不能为空，当前：#{@data}"
-        info: {data: @data}
-      })
+    if _.isNil(@value)
+      error.Check_Must_Failure({value: @value}, message)
     return @
 
 
@@ -31,19 +26,38 @@ module.exports = class Checker
   ##
   min: (min, message) =>
     switch
-      when _.isString(@data)
-        hint = '字太少'
-        size = @data.length
-
-    if(size < min)
-      @throw({
-        code: 10001
-        message: message
-        zh_message: "#{hint}，当前=#{size}, min=#{min}"
-        info: {data: @data, min, size}
-      })
-
+      when _.isString(@value) then @minString(min, message)
+      when _.isNumber(@value) then @minNumber(min, message)
     return @
+
+  minNumber: (min, message) =>
+    if(@value < min)
+      error.Check_Number_Min_Failure({value: @value, min}, message)
+
+  minString: (min, message) =>
+    size = @value.length
+    if(size < min)
+      error.Check_String_Min_Failure({value: @value, size, min}, message)
+
+
+
+  ### @PUBLIC ###
+  # 最大值验证
+  ##
+  max: (max, message) =>
+    switch
+      when _.isString(@value) then @maxString(max, message)
+      when _.isNumber(@value) then @maxNumber(max, message)
+    return @
+
+  maxNumber: (max, message) =>
+    if(@value > max)
+      error.Check_Number_Max_Failure({value: @value, max}, message)
+
+  maxString: (max, message) =>
+    size = @value.length
+    if(size > max)
+      error.Check_String_Max_Failure({value: @value, size, max}, message)
 
 
 
@@ -55,7 +69,7 @@ module.exports = class Checker
     if !callback
       ruleNotFound({name})
     try
-      callback(@data)
+      callback(@value)
     catch error
       error.message = "#{name}: #{error.message}"
       throw error

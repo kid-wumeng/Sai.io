@@ -22,21 +22,14 @@ exports.language = 'en'
 # 2. Sai-error
 # 3. 开发者自行抛出的error
 # 主要目的：方便debug与日志记录
-# error的属性：
-# - status
-# - code
-# - message
-# - data
-# @TODO 记录网络调用附加信息
+#
+# app.catch()已妥善处理由http请求引发的异常
+# 除此之外的异常，需要用下面2个事件捕获，并交给config.onCatch
+#
+# 主线程的未捕获异常
+# 注意，uncaughtException触发后会导致程序强退（NodeJS策略，合理）
+process.on 'uncaughtException',  (error) => @onCatch(error)
+# Promise引起的未捕获异常
+process.on 'unhandledRejection', (error) => @onCatch(error)
 ##
 exports.onCatch = (error) =>
-
-# 全局未捕获异常，需触发config.onCatch
-#
-# 以下异常已被妥善处理
-# 1. 经由http请求触发的异常，这类异常由app.catch()加工后自行触发config.onCatch
-# 2. 开发者以try...catch捕获的异常，由其自行处理，一般不会触发onCatch（除非开发者主动调用）
-#
-# 除此之外的异常，将会进入uncaughtException流程
-# NodeJS策略：触发uncaughtException后，程序会被强制退出
-process.on 'uncaughtException', (error) => @onCatch(error)
