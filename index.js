@@ -12,18 +12,24 @@ require('coffeescript/register')
 
 ;(async()=>{try{
 
-  let schema = new Sai.Schema()
-
-  schema.rule('user.name', (name)=>{
-    schema.check(name).format('user.name')
+  let mongo = new Sai.MongoDB({
+    name: 'orz-world'
   })
 
 
-  schema.format('user.name', (name)=>/^\w+$/.test(name))
-  schema.check('woshik').rule('user.name')
+  mongo.alias('movies', 'MMM')
 
+  mongo.hide('movies', 'name')
 
+  await mongo.connect()
 
+  movies = await mongo.col('MMM').find({}, {
+    keys: 'name',
+    includeHides: true
+  })
+  console.log(movies);
+
+  mongo.close()
 
 }catch(error){
   console.log(error);

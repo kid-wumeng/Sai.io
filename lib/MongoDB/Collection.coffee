@@ -7,6 +7,7 @@ module.exports = class Collection
   constructor: (options={}) ->
     @db      = options.db
     @idStore = options.idStore
+    @hides   = options.hides ? {}
     @name    = options.name
     @col     = @db.collection(@name)
 
@@ -74,6 +75,7 @@ module.exports = class Collection
     @formatOptions_Sort(options)
     @formatOptions_Page(options)
     @formatOptions_Keys(options)
+    @formatOptions_Hide(options)
     return options
 
 
@@ -107,6 +109,34 @@ module.exports = class Collection
         else
           dict[key] = 1
       options.fields = dict
+
+
+
+  formatOptions_Hide: (options) =>
+    return if options.includeHides
+
+    hideKeys = @hides[@name] ? []
+    return if !hideKeys.length
+
+    options.fields ?= {}
+
+    # 确定是 +模式 还是 -模式
+    # 取一个value判断即可，因为混用时mongodb会报错
+    mode = 0
+    for key, value of options.fields
+      mode = value
+      break
+
+    # +模式，则排除 +隐藏字段
+    if mode is 1
+      options.fields = _.omit(options.fields, hideKeys)
+      # 若正好全部排空，则会变成查询全部字段，这不符合开发者及hide的本意
+      # 为此始终添加_id
+      options.fields._id = 1
+    # -模式，则添加 -隐藏字段
+    else
+      for key in hideKeys
+        options.fields[key] = 0
 
 
 

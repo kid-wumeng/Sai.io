@@ -17,6 +17,7 @@ module.exports = class MongoDB
     @pass    = options.pass
     @idStore = options.idStore
     @aliases = {}
+    @hides   = {}
     @db      = null
     @cols    = {}
 
@@ -86,21 +87,31 @@ module.exports = class MongoDB
 
 
   ### @PUBLIC ###
+  # 隐藏某个集合的某个字段，使其只能配合includeHide才查询得到
+  ##
+  hide: (col, key) =>
+    col = @aliases[col] ? col
+    if !@hides[col]
+      @hides[col] = []
+    @hides[col].push(key)
+
+
+
+  ### @PUBLIC ###
   # 选择集合
   ##
   col: (name) =>
     name = @aliases[name] ? name
-    col  = @cols[name]
 
-    if !col
-      col = new Collection({
+    if !@cols[name]
+      @cols[name] = new Collection({
         db:      @db
         idStore: @idStore
+        hides:   @hides
         name:    name
       })
-      @cols[name] = col
 
-    return col
+    return @cols[name]
 
 
   ### @PUBLIC ###
