@@ -1,13 +1,16 @@
-_      = require('lodash')
-helper = require('../helper')
-error  = require('./error')
+_        = require('lodash')
+fileType = require('file-type')
+helper   = require('../helper')
+error    = require('./error')
 
 
 module.exports = class Checker
 
   constructor: (options={}) ->
-    @value = options.value
-    @rules = options.rules ? {}
+    @value   = options.value
+    @rules   = options.rules   ? {}
+    @formats = options.formats ? {}
+    @schema  = options.schema
 
 
 
@@ -16,7 +19,35 @@ module.exports = class Checker
   ##
   must: (message) =>
     if _.isNil(@value)
-      error.Check_Must_Failure({value: @value}, message)
+      error.Check_Must_Failure({ value: @value }, message)
+    return @
+
+
+
+  ### @PUBLIC ###
+  # 类型验证
+  ##
+  type: (type, message) =>
+    value = @value
+    switch
+      when type is Boolean and !_.isBoolean(value)     then fail = true
+      when type is Number  and !_.isFinite(value)      then fail = true
+      when type is String  and !_.isString(value)      then fail = true
+      when type is Object  and !_.isPlainObject(value) then fail = true
+      else
+        if !(value instanceof type) then fail = true
+    if fail
+      error.Check_Type_Failure({ value, type }, message)
+    return @
+
+
+
+  ### @PUBLIC ###
+  # 枚举验证
+  ##
+  enum: (enums, message) =>
+    if !enums.includes(@value)
+      error.Check_Enum_Failure({ value: @value, enums }, message)
     return @
 
 
@@ -25,19 +56,35 @@ module.exports = class Checker
   # 最小值验证
   ##
   min: (min, message) =>
+    value = @value
     switch
-      when _.isString(@value) then @minString(min, message)
-      when _.isNumber(@value) then @minNumber(min, message)
+      when _.isString(value)       then @minString(value, min, message)
+      when _.isNumber(value)       then @minNumber(value, min, message)
+      when value instanceof Buffer then @minBuffer(value, min, message)
+      when value instanceof Date   then @minDate(value, min, message)
     return @
 
-  minNumber: (min, message) =>
-    if(@value < min)
-      error.Check_Number_Min_Failure({value: @value, min}, message)
 
-  minString: (min, message) =>
-    size = @value.length
+  minNumber: (value, min, message) =>
+    if(value < min)
+      error.Check_Number_Min_Failure({ value, min }, message)
+
+
+  minString: (value, min, message) =>
+    size = @schema.lenString(value)
     if(size < min)
-      error.Check_String_Min_Failure({value: @value, size, min}, message)
+      error.Check_String_Min_Failure({ value, size, min }, message)
+
+
+  minBuffer: (value, min, message) =>
+    size = @schema.lenString(value)
+    if(size < min)
+      error.Check_Buffer_Min_Failure({ value, size, min }, message)
+
+
+  minDate: (value, min, message) =>
+    if(value.getTime() < min.getTime())
+      error.Check_Date_Min_Failure({ value, min }, message)
 
 
 
@@ -45,19 +92,69 @@ module.exports = class Checker
   # 最大值验证
   ##
   max: (max, message) =>
+    value = @value
     switch
-      when _.isString(@value) then @maxString(max, message)
-      when _.isNumber(@value) then @maxNumber(max, message)
+      when _.isString(value)       then @maxString(value, max, message)
+      when _.isNumber(value)       then @maxNumber(value, max, message)
+      when value instanceof Buffer then @maxBuffer(value, max, message)
+      when value instanceof Date   then @maxDate(value, max, message)
     return @
 
-  maxNumber: (max, message) =>
-    if(@value > max)
-      error.Check_Number_Max_Failure({value: @value, max}, message)
 
-  maxString: (max, message) =>
-    size = @value.length
+  maxNumber: (value, max, message) =>
+    if(value > max)
+      error.Check_Number_Max_Failure({ value, max }, message)
+
+
+  maxString: (value, max, message) =>
+    size = value.length
     if(size > max)
-      error.Check_String_Max_Failure({value: @value, size, max}, message)
+      error.Check_String_Max_Failure({ value, size, max }, message)
+
+
+  maxBuffer: (value, max, message) =>
+    size = value.length
+    if(size > max)
+      error.Check_Buffer_Max_Failure({ value, size, max }, message)
+
+
+  maxDate: (value, max, message) =>
+    if(value.getTime() > max.getTime())
+      error.Check_Date_Max_Failure({ value, max }, message)
+
+
+
+  ### @PUBLIC ###
+  # MIME验证
+  ##
+  mime: (mimes, message) =>
+    mime = fileType(value).mime
+    if !mimes.includes(mime)
+      error.Check_MIME_Failure({ value, mime, mimes }, message)
+    return @
+
+
+
+  ### @PUBLIC ###
+  # 格式验证
+  ##
+  format: (formats, message) =>
+    if !Array.isArray(formats)
+      formats = [formats]
+
+    value = @value
+    valid = false
+
+    for name in formats
+      format = @formats[name]
+      if format(value)
+        valid = true
+        break
+
+    if !valid
+      error.Check_Format_Failure({ value, formats }, message)
+
+    return @
 
 
 
@@ -66,38 +163,11 @@ module.exports = class Checker
   ##
   rule: (name) =>
     callback = @rules[name]
-    if !callback
-      ruleNotFound({name})
+    if !callback then error.Rule_Not_Found({ ruleName: name })
+
     try
-      callback(@value)
+      await callback(@value)
     catch error
+      # 加上规则集的名字后继续上抛异常
       error.message = "#{name}: #{error.message}"
-      throw error
-
-
-
-  throw: ({code, message, zh_message, en_message, info}) =>
-    if _.isFunction(message)
-      message = message(info ? {})
-
-    helper.throw({
-      status: 400
-      code: code
-      message: message
-      zh_message: zh_message
-      en_message: en_message
-      info: info
-    })
-
-
-
-###
-# 异常处理方法
-###
-ruleNotFound = ({name}) =>
-  helper.throw({
-    status: 404
-    code: 10001
-    zh_message: "规则 #{name} 未找到，是不是没用 schema.rule() 注册？"
-    info: {name}
-  })
+      helper.throw(error)

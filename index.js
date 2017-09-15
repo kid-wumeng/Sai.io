@@ -1,27 +1,33 @@
 require('coffeescript/register')
 
+  let axios = require('axios')
+  let Sai   = require('./lib')
+
+  Sai.config.language = 'zh'
+  Sai.config.onCatch = (error) => {
+    console.log(error.message.red);
+  }
 
 
-let axios = require('axios')
-let Sai   = require('./lib')
 
-Sai.config.language = 'zh'
-Sai.config.onCatch = (error) => {
-  console.log(error.message.red);
-}
-
-
-;(async()=>{
+;(async()=>{try{
 
   let schema = new Sai.Schema()
 
-  schema.rule('article.title', (title)=>{
-    schema.check(title).min(12)
+  schema.rule('user.name', (name)=>{
+    schema.check(name).format('user.name')
   })
 
-  schema.check('asdfghjk').rule('article.title')
 
-})()
+  schema.format('user.name', (name)=>/^\w+$/.test(name))
+  schema.check('woshik').rule('user.name')
+
+
+
+
+}catch(error){
+  console.log(error);
+}})()
 
 
 
