@@ -12,10 +12,24 @@ require('coffeescript/register')
 
 ;(async()=>{try{
 
-  helper = require('./lib/helper')
-  await helper.sleep(6000)
-  console.log(111);
 
+
+
+  let app = new Sai.App({
+    port: 9000
+  })
+
+  app.io('Book.findOne', function(user, n){
+    console.log(user);
+    console.log(n);
+    return {lastDate: new Date()}
+  })
+  app.service('Book.findOne', 'Book.findOne')
+  app.start()
+
+
+  let api = new Sai.RemoteApp('http://127.0.0.1:9000')
+  await api.call('Book.findOne', 4, 9)
 
 
 }catch(error){
@@ -23,57 +37,6 @@ require('coffeescript/register')
 }})()
 
 
-
-let app = new Sai.App({
-  port: 9000
-})
-
-
-// async function sleep(timeout) {
-//   return new Promise((resolve, reject) => {
-//     setTimeout(function() {
-//       resolve();
-//     }, timeout);
-//   });
-// }
-// app.io('Book.findOne', function(data){
-//   throw "gfd"
-//   this.call('Book.findOne')
-//   return {lastDate: new Date()}
-// })
-//
-// app.io('Book.findOne2', function(data){
-//   return {lastDate: new Date()}
-// })
-//
-//
-//
-// app.call('fjdj')
-//
-//
-//
-// app.service('Book.findOne', 'Book.findOne')
-// app.mount('myname', 'kid')
-//
-//
-//
-// app.start()
-//
-//
-// data = {
-//   id: 99,
-//   createDate: new Date(),
-// }
-//
-// helper.encodeBody(data)
-
-// axios.post('http://localhost:9000/Book.findOne', {
-//   data: data
-// }).then((res)=>{
-// }).catch((error)=>{
-//   // console.log(error.response.status);
-//   // console.log(error.response.data.error);
-// })
 
 
 module.exports = Sai

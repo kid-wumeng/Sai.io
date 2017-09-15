@@ -53,7 +53,7 @@ module.exports = class App
 
 
   ### @PUBLIC ###
-  # 配置app
+  # 配置
   ##
   config: (key, value) =>
     @[key] = value
@@ -71,13 +71,13 @@ module.exports = class App
   ### @PUBLIC ###
   # 调用io
   ##
-  call: (name, data={}, ctx) =>
+  callIO: (name, params, ctx) =>
     io = @ios[name]
     if(io)
       ctx = @formatContext(ctx)
       ctx.ioChain.push(name)
       ctx.ioStack.push(name)
-      result = io.call(ctx, data)
+      result = io.call(ctx, params...)
       ctx.ioStack.pop()
       return result
     else
@@ -139,10 +139,10 @@ module.exports = class App
 
 
 
-  callService: (name, data, ctx) =>
+  callService: (name, params, ctx) =>
     service = @services[name]
     if(service)
-      return @call(service.io, data, ctx)
+      return @callIO(service.io, params, ctx)
     else
       error.Service_Not_Found({serviceName: name})
 
@@ -191,7 +191,7 @@ module.exports = class App
     body = ctx.requestBody
     body = JSON.parse(body)
     helper.decodeBody(body)
-    ctx.responseBody = body
+    ctx.requestBody = body
     await next()
 
 
@@ -212,9 +212,9 @@ module.exports = class App
   callback: (ctx) =>
     try
       name = ctx.serviceName
-      data = ctx.requestBody.data
-      data = await @callService(name, data, ctx)
-      ctx.responseBody.data = data
+      params = ctx.requestBody.params
+      result = await @callService(name, params, ctx)
+      ctx.responseBody.result = result
     catch error
       @catch(ctx, error)
 
