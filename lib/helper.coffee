@@ -45,6 +45,15 @@ i18n = ({ message, en_message, zh_message }) =>
 
 
 ### @PUBLIC ###
+# 异步睡眠
+# 借助await即可实现同步睡眠
+##
+exports.sleep = (ms) =>
+  return new Promise((resolve) => setTimeout(resolve, ms))
+
+
+
+### @PUBLIC ###
 # (深度优先)遍历一颗树的全部叶子节点
 # callback(叶子key, 叶子value, 父节点parent)
 ##

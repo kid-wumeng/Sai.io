@@ -12,24 +12,11 @@ require('coffeescript/register')
 
 ;(async()=>{try{
 
-  let mongo = new Sai.MongoDB({
-    name: 'orz-world'
-  })
+  helper = require('./lib/helper')
+  await helper.sleep(6000)
+  console.log(111);
 
 
-  mongo.alias('movies', 'MMM')
-
-  mongo.hide('movies', 'name')
-
-  await mongo.connect()
-
-  movies = await mongo.col('MMM').find({}, {
-    keys: 'name',
-    includeHides: true
-  })
-  console.log(movies);
-
-  mongo.close()
 
 }catch(error){
   console.log(error);
@@ -37,9 +24,9 @@ require('coffeescript/register')
 
 
 
-// let app = new Sai.App({
-//   port: 9000
-// })
+let app = new Sai.App({
+  port: 9000
+})
 
 
 // async function sleep(timeout) {
@@ -49,8 +36,6 @@ require('coffeescript/register')
 //     }, timeout);
 //   });
 // }
-//
-//
 // app.io('Book.findOne', function(data){
 //   throw "gfd"
 //   this.call('Book.findOne')
