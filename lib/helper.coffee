@@ -1,3 +1,8 @@
+_      = require('lodash')
+config = require('./config')
+
+
+
 ###
 # 综合辅助工具库，放在这里的方法需满足2个基本条件：
 # 1. 两个以上模块会用到
@@ -9,29 +14,33 @@
 
 
 
-_      = require('lodash')
-config = require('./config')
-
-
-
 ### @PUBLIC ###
 # 抛出异常
+# Sai系统层方案，以Sai标准封装error对象（兼容NodeJS原生error格式）
 ##
-exports.throw = ({status, code, message, en_message, zh_message, info, stack}) ->
-  error        = new Error()
-  error.bySai  = true
-  error.status = status if status
-  error.code   = code   if code
-  error.info   = info   if info
-
-  if(message)
-    error.message = message
-  else
-    switch(config.language)
-      when 'en' then error.message = en_message
-      when 'zh' then error.message = zh_message
-
+exports.throw = ({ status, code, message, en_message, zh_message, data }) =>
+  message = i18n({
+    message
+    en_message
+    zh_message
+  })
+  error = new Error(message)
+  Object.assign(error, {
+    status
+    code
+    data
+  })
   throw error
+
+
+
+# 根据language配置选择message
+i18n = ({ message, en_message, zh_message }) =>
+  if !message
+    switch config.language
+      when 'en' then message = en_message
+      when 'zh' then message = zh_message
+  return message ? ''
 
 
 

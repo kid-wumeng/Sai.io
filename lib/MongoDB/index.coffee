@@ -2,8 +2,8 @@ _          = require('lodash')
 mongodb    = require('mongodb')
 Collection = require('./Collection')
 JoinQuery  = require('./JoinQuery')
-error      = require('../error')
 helper     = require('../helper')
+error      = require('./error')
 
 
 

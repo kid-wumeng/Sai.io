@@ -30,3 +30,13 @@ exports.language = 'en'
 # @TODO 记录网络调用附加信息
 ##
 exports.onCatch = (error) =>
+
+# 全局未捕获异常，需触发config.onCatch
+#
+# 以下异常已被妥善处理
+# 1. 经由http请求触发的异常，这类异常由app.catch()加工后自行触发config.onCatch
+# 2. 开发者以try...catch捕获的异常，由其自行处理，一般不会触发onCatch（除非开发者主动调用）
+#
+# 除此之外的异常，将会进入uncaughtException流程
+# NodeJS策略：触发uncaughtException后，程序会被强制退出
+process.on 'uncaughtException', (error) => @onCatch(error)

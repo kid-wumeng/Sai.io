@@ -1,8 +1,8 @@
 _      = require('lodash')
 Koa    = require('koa')
 config = require('../config')
-error  = require('../error')
 helper = require('../helper')
+error  = require('./error')
 
 
 

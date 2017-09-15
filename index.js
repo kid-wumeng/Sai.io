@@ -10,7 +10,7 @@ Sai.config.onCatch = (error) =>
   console.log(error.message);
 
 
-;(async ()=>{
+;(async()=>{
 
 
 
