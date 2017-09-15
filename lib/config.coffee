@@ -13,3 +13,20 @@
 # 'zh' - 简体中文
 ##
 exports.language = 'en'
+
+
+
+### @PUBLIC ###
+# 全局异常捕获事件，可捕获到：
+# 1. NodeJS运行期异常
+# 2. Sai-error
+# 3. 开发者自行抛出的error
+# 主要目的：方便debug与日志记录
+# error的属性：
+# - status
+# - code
+# - message
+# - data
+# @TODO 记录网络调用附加信息
+##
+exports.onCatch = (error) =>

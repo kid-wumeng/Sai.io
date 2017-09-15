@@ -1,5 +1,7 @@
 _      = require('lodash')
 Koa    = require('koa')
+config = require('../config')
+error  = require('../error')
 helper = require('../helper')
 
 
@@ -21,7 +23,7 @@ helper = require('../helper')
 # {function} call(ioName, data)
 # 调用io
 #
-# {function} throw([status], message, [info])
+# {function} throw([status], message, [data])
 # 抛出异常，这是Sai推荐的做法（而不是使用JS原生的throw关键词），接口与koa-throw保持一致
 #
 # {string} serviceName
@@ -79,7 +81,7 @@ module.exports = class App
       ctx.ioStack.pop()
       return result
     else
-      ioNotFound({name})
+      error.IO_Not_Found({ioName: name})
 
 
 
@@ -102,7 +104,7 @@ module.exports = class App
       @ioStack.pop()
       return result
     else
-      ioNotFound({name})
+      error.IO_Not_Found({ioName: name})
 
 
 
@@ -112,15 +114,19 @@ module.exports = class App
     a3 = args[2]
     switch args.length
       when 1
-        helper.throw({message: a1})
+        # @throw(message)
+        error.throw({message: a1})
       when 2
         switch
-          when _.isNumber(a1) and _.isString(a2)      then helper.throw({status: a1,  message: a2})
-          when _.isString(a1) and _.isPlainObject(a2) then helper.throw({message: a1, info: a2})
+          # @throw(status, message)
+          when _.isNumber(a1) and _.isString(a2)      then error.throw({status: a1,  message: a2})
+          # @throw(message, data)
+          when _.isString(a1) and _.isPlainObject(a2) then error.throw({message: a1, data: a2})
       when 3
-        helper.throw({status: a1, message: a2, info: a3})
+        # @throw(status, message, data)
+        error.throw({status: a1, message: a2, data: a3})
       else
-        helper.throw()
+        error.throw()
 
 
 
@@ -138,7 +144,7 @@ module.exports = class App
     if(service)
       return @call(service.io, data, ctx)
     else
-      serviceNotFound({name})
+      error.Service_Not_Found({serviceName: name})
 
 
 
@@ -214,46 +220,28 @@ module.exports = class App
 
 
 
-  catch: (ctx, error) =>
-    if(error.bySai)
-      # bySai标志位为true，表示这个error：
-      # 1. 由Sai系统抛出
-      # 2. 由开发者调用@throw抛出
-      ctx.status = error.status
-      ctx.responseBody.error =
-        code:        error.code
-        message:     error.message
-        info:        error.info
-        serviceName: ctx.serviceName
-        ioChain:     ctx.ioChain
-        ioStack:     ctx.ioStack
-    else
-      # 否则，是由开发者使用throw关键词抛出
-      ctx.status = 400
-      ctx.responseBody.error =
-        message:     error.toString()
-        serviceName: ctx.serviceName
-        ioChain:     ctx.ioChain
-        ioStack:     ctx.ioStack
+  catch: (ctx, error={}) =>
+    # 可能开发者会直接使用 throw 'some messages...'
+    # 则需要包装成error对象
+    if _.isString(error)
+      error = message: error
 
+    # 表明此异常由http请求触发
+    error.byHTTPRequest = true
+    error.serviceName   = ctx.serviceName
+    error.ioChain       = ctx.ioChain
+    error.ioStack       = ctx.ioStack
 
+    # 本地全局捕获
+    config.onCatch(error)
 
-
-###
-# 异常处理方法
-###
-ioNotFound = ({name}) =>
-  helper.throw({
-    status: 404
-    code: 10001
-    zh_message: "IO ~ #{name} ~ 未找到，是不是没用 app.io() 注册？"
-    info: {name}
-  })
-
-serviceNotFound = ({name}) =>
-  helper.throw({
-    status: 404
-    code: 10001
-    zh_message: "服务 ~ #{name} ~ 未找到，是不是没用 app.service() 注册？"
-    info: {name}
-  })
+    # 响应：只返回必要的错误信息
+    ctx.status = error.status ? 400
+    ctx.responseBody.error = _.pick(error, [
+      'code'
+      'message'
+      'data'
+      'serviceName'
+      'ioChain'
+      'ioStack'
+    ])

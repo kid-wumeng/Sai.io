@@ -24,7 +24,9 @@ exports.throw = ({status, code, message, en_message, zh_message, info, stack}) -
   error.code   = code   if code
   error.info   = info   if info
 
-  if(!message)
+  if(message)
+    error.message = message
+  else
     switch(config.language)
       when 'en' then error.message = en_message
       when 'zh' then error.message = zh_message

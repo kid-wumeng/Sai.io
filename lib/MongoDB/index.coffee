@@ -2,6 +2,7 @@ _          = require('lodash')
 mongodb    = require('mongodb')
 Collection = require('./Collection')
 JoinQuery  = require('./JoinQuery')
+error      = require('../error')
 helper     = require('../helper')
 
 
@@ -67,7 +68,7 @@ module.exports = class MongoDB
       includeRemoved: true
     })
     if(doc and store.lastID < doc.id)
-      idOverflow({
+      error.IDStore_Overflow({
         col: col
         lastID: doc.id
         idStore: @idStore
@@ -106,8 +107,8 @@ module.exports = class MongoDB
   # 创建 DBRef 对象
   ##
   DBRef: (col, doc={}) =>
-    if !@validObjectID(doc?._id)
-      DBRef_idInvalid({doc})
+    if not @validObjectID(doc?._id)
+      error.DBRef_ID_Invalid({doc})
 
     return{
       $ref: col
@@ -136,24 +137,3 @@ module.exports = class MongoDB
       options: options
     })
     await joinQuery.execule()
-
-
-
-###
-# 异常处理方法
-###
-idOverflow = ({col, lastID, idStore, lastIDInStore}) =>
-  helper.throw({
-    code: 12002
-    zh_message: "集合`#{col}`的id超出了idStore的记录，#{col}: #{lastID}，#{idStore}.#{col}: #{lastIDInStore}，请核验后校准"
-    info: {col, lastID, lastIDInStore}
-  })
-
-
-
-DBRef_idInvalid = ({doc}) =>
-  helper.throw({
-    code: 12003
-    zh_message: "DBRef 生成失败，执行 mongo.DBRef(colname, doc) 时发现 doc._id 不是有效的 MongoDB ObjectID"
-    info: {doc}
-  })
