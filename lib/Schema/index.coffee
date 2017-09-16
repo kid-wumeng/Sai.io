@@ -13,7 +13,7 @@ module.exports = class Schema
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 定制规则
   ##
   rule: (name, callback) =>
@@ -21,7 +21,7 @@ module.exports = class Schema
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 定制格式
   ##
   format: (name, callback) =>
@@ -29,7 +29,7 @@ module.exports = class Schema
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 包装数据
   ##
   check: (data, path) =>
@@ -47,7 +47,7 @@ module.exports = class Schema
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 统计字符串长度，单字节占1位，双字节占2位
   ##
   lenString: (string) =>
@@ -59,7 +59,7 @@ module.exports = class Schema
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 是否Email
   ##
   isEmail: (string) =>
@@ -68,7 +68,7 @@ module.exports = class Schema
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 是否URL
   ##
   isUrl: (string) =>

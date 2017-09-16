@@ -14,7 +14,7 @@ module.exports = class Checker
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 存在性验证
   ##
   must: (message) =>
@@ -24,7 +24,7 @@ module.exports = class Checker
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 类型验证
   ##
   type: (type, message) =>
@@ -42,7 +42,7 @@ module.exports = class Checker
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 枚举验证
   ##
   enum: (enums, message) =>
@@ -52,7 +52,7 @@ module.exports = class Checker
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 最小值验证
   ##
   min: (min, message) =>
@@ -88,7 +88,7 @@ module.exports = class Checker
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 最大值验证
   ##
   max: (max, message) =>
@@ -124,7 +124,7 @@ module.exports = class Checker
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # MIME验证
   ##
   mime: (mimes, message) =>
@@ -135,7 +135,7 @@ module.exports = class Checker
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 格式验证
   ##
   format: (formats, message) =>
@@ -158,7 +158,7 @@ module.exports = class Checker
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 规则集验证
   ##
   rule: (name) =>

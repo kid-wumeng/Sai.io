@@ -14,7 +14,7 @@ module.exports = class RemoteApp
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 配置
   ##
   config: (key, value) =>
@@ -22,15 +22,42 @@ module.exports = class RemoteApp
 
 
 
-  call: (service, params...) =>
-    url = "#{@host}/#{service}"
-    axios.post(url, {
+  ### @Public ###
+  # 调用远程method
+  ##
+  call: (arg1, args...) =>
+    if _.isString(arg1)
+      body = @task(arg1, args...)  # call(method, params...)
+    else
+      body = arg1                  # call(tasks)
+
+    return axios
+      .post(@host, body)
+      .then(@onSuccess)
+      .catch(@onFailure)
+
+
+
+  ### @Public ###
+  # 调用远程method
+  ##
+  task: (method, params...) =>
+    return{
       jsonrpc: '2.0'
-      method: service
+      method: method
       params: params
-    }).then((res)=>
-      console.log(res.data.result);
-    ).catch((error)=>
-      console.log(error.response.status);
-      console.log(error.response.data.error);
-    )
+    }
+
+
+
+  onSuccess: (response) =>
+    responseBody = response.data
+    helper.decodeBody(responseBody)
+    return responseBody.result
+
+
+
+  onFailure: ({response}) =>
+    responseBody = response.data
+    helper.decodeBody(responseBody)
+    return responseBody.error

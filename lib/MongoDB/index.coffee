@@ -23,7 +23,7 @@ module.exports = class MongoDB
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 连接数据库
   ##
   connect: =>
@@ -43,7 +43,7 @@ module.exports = class MongoDB
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 关闭数据库链接
   ##
   close: =>
@@ -78,7 +78,7 @@ module.exports = class MongoDB
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 设置集合的别名
   ##
   alias: (origin, alias) =>
@@ -86,7 +86,7 @@ module.exports = class MongoDB
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 隐藏某个集合的某个字段，使其只能配合includeHide才查询得到
   ##
   hide: (col, key) =>
@@ -97,7 +97,7 @@ module.exports = class MongoDB
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 选择集合
   ##
   col: (name) =>
@@ -114,7 +114,7 @@ module.exports = class MongoDB
     return @cols[name]
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 创建 DBRef 对象
   ##
   DBRef: (col, doc={}) =>
@@ -129,7 +129,7 @@ module.exports = class MongoDB
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 验证_id是否有效
   ##
   validObjectID: (_id) =>
@@ -137,7 +137,7 @@ module.exports = class MongoDB
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 验证_id是否有效
   ##
   join: (docs, key, options) =>

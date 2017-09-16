@@ -1,8 +1,12 @@
-_      = require('lodash')
-Koa    = require('koa')
-config = require('../config')
-helper = require('../helper')
-error  = require('./error')
+_                = require('lodash')
+config           = require('../config')
+helper           = require('../helper')
+IO               = require('./IO')
+Method           = require('./Method')
+Context          = require('./Context')
+Server           = require('./Server')
+IO_Not_Found     = require('./errors/IO_Not_Found')
+Method_Not_Found = require('./errors/Method_Not_Found')
 
 
 
@@ -44,15 +48,19 @@ error  = require('./error')
 module.exports = class App
 
   constructor: (options={}) ->
-    @port     = options.port
-    @ios      = {}
-    @services = {}
-    @mounts   = {}
-    @koa      = new Koa()
+    @port    = options.port ? 80
+    @ios     = {}
+    @methods = {}
+    @mounts  = {}
+
+    @server = new Server({
+      port: @port
+      callback: @callback
+    })
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 配置
   ##
   config: (key, value) =>
@@ -60,95 +68,40 @@ module.exports = class App
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 注册io
   ##
-  io: (name, fn) =>
-    @ios[name] = fn
+  io: (name, func) =>
+    io = new IO({name, func})
+    @ios[name] = io
 
 
 
-  ### @PUBLIC ###
-  # 调用io
+  ### @Public ###
+  # 注册method
   ##
-  callIO: (name, params, ctx) =>
-    io = @ios[name]
-    if(io)
-      ctx = @formatContext(ctx)
-      ctx.ioChain.push(name)
-      ctx.ioStack.push(name)
-      result = io.call(ctx, params...)
-      ctx.ioStack.pop()
-      return result
-    else
-      error.IO_Not_Found({ioName: name})
-
-
-
-  formatContext: (ctx={}) =>
-    Object.assign(ctx, @mounts)
-    ctx.call    = @callInContext.bind(ctx, @ios)
-    ctx.throw   = @throwInContext
-    ctx.ioChain = []
-    ctx.ioStack = []
-    return ctx
-
-
-
-  callInContext: (ios, name, data={}) ->
-    io = ios[name]
-    if(io)
-      @ioChain.push(name)
-      @ioStack.push(name)
-      result = io.call(@, data)
-      @ioStack.pop()
-      return result
-    else
-      error.IO_Not_Found({ioName: name})
-
-
-
-  throwInContext: (args...) ->
+  method: (args...) =>
     a1 = args[0]
     a2 = args[1]
     a3 = args[2]
-    switch args.length
-      when 1
-        # @throw(message)
-        error.throw({message: a1})
-      when 2
-        switch
-          # @throw(status, message)
-          when _.isNumber(a1) and _.isString(a2)      then error.throw({status: a1,  message: a2})
-          # @throw(message, data)
-          when _.isString(a1) and _.isPlainObject(a2) then error.throw({message: a1, data: a2})
-      when 3
-        # @throw(status, message, data)
-        error.throw({status: a1, message: a2, data: a3})
-      else
-        error.throw()
+    switch
+      when helper.overload(args, String)                 then method_name = a1; io_name = a1; options = {}
+      when helper.overload(args, String, String)         then method_name = a1; io_name = a2; options = {}
+      when helper.overload(args, String, Object)         then method_name = a1; io_name = a1; options = a2
+      when helper.overload(args, String, String, Object) then method_name = a1; io_name = a2; options = a3
 
-
-
-  ### @PUBLIC ###
-  # 注册服务
-  ##
-  service: (name, io) =>
-    @services[name] =
-      io: io
-
-
-
-  callService: (name, params, ctx) =>
-    service = @services[name]
-    if(service)
-      return @callIO(service.io, params, ctx)
+    io = @ios[io_name]
+    if io
+      @methods[method_name] = new Method({
+        name: method_name
+        io: io
+      })
     else
-      error.Service_Not_Found({serviceName: name})
+      IO_Not_Found(io_name)
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 挂载属性到ctx上
   ##
   mount: (key, value) =>
@@ -156,67 +109,64 @@ module.exports = class App
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
+  # 本地调用io
+  ##
+  call: (name, params...) =>
+    io = @ios[name]
+    if io
+      ctx = @formatContext(ctx)
+      return io.call(ctx, params)
+    else
+      IO_Not_Found(name)
+
+
+
+  ### @Private ###
+  callMethod: (name, params, ctx) =>
+    method = @methods[name]
+    if method
+      ctx = @formatContext(ctx)
+      return method.call(ctx, params)
+    else
+      Method_Not_Found(name)
+
+
+
+  ### @Private ###
+  formatContext: (ctx) =>
+    return Context.format(ctx, {ios: @ios, mount: @mount})
+
+
+
+  ### @Public ###
   # 启动app
   ##
   start: (message) =>
-    @koa.use(@decodeServiceName)
-    @koa.use(@getRequestBody)
-    @koa.use(@decodeRequestBody)
-    @koa.use(@encodeResponseBody)
-    @koa.use(@setResponseBody)
-    @koa.use(@callback)
-
-    @koa.listen(@port)
+    @server.start()
     message ?= "sai-io app:#{@port} start ~ !"
     console.log message.green
 
 
 
-  decodeServiceName: (ctx, next) =>
-    ctx.serviceName = ctx.path.slice(1)
-    await next()
-
-
-
-  getRequestBody: (ctx, next) =>
-    ctx.requestBody = ''
-    ctx.req.on('data', (chunk) => ctx.requestBody += chunk)
-    await new Promise((resolve) => ctx.req.on('end', resolve))
-    await next()
-
-
-
-  decodeRequestBody: (ctx, next) =>
-    body = ctx.requestBody
-    body = JSON.parse(body)
-    helper.decodeBody(body)
-    ctx.requestBody = body
-    await next()
-
-
-
-  encodeResponseBody: (ctx, next) =>
-    await next()
-    helper.encodeBody(ctx.responseBody)
-
-
-
-  setResponseBody: (ctx, next) =>
-    ctx.responseBody = {}
-    await next()
-    ctx.body = ctx.responseBody
-
-
-
   callback: (ctx) =>
     try
-      name = ctx.serviceName
-      params = ctx.requestBody.params
-      result = await @callService(name, params, ctx)
-      ctx.responseBody.result = result
+      await @callback_JSON_RPC(ctx)
     catch error
       @catch(ctx, error)
+
+
+
+  callback_JSON_RPC: (ctx) =>
+    method = ctx.requestBody.method
+    params = ctx.requestBody.params
+    id     = ctx.requestBody.id
+
+    result = await @callMethod(method, params, ctx)
+
+    ctx.responseBody.result  = result
+    ctx.responseBody.id      = id
+    ctx.responseBody.jsonrpc = '2.0'
 
 
 
@@ -228,7 +178,7 @@ module.exports = class App
 
     # 表明此异常由http请求触发
     error.byHTTPRequest = true
-    error.serviceName   = ctx.serviceName
+    error.method        = ctx.requestBody.method
     error.ioChain       = ctx.ioChain
     error.ioStack       = ctx.ioStack
 

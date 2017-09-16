@@ -19,7 +19,7 @@ module.exports = class Redis
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 连接数据库
   ##
   connect: =>
@@ -31,7 +31,7 @@ module.exports = class Redis
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 关闭数据库链接
   ##
   close: =>

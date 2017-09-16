@@ -14,7 +14,27 @@ config = require('./config')
 
 
 
-### @PUBLIC ###
+exports.overload = (args, types...) =>
+  if args.length isnt types.length
+    return false
+  for type, i in types
+    if not @instanceof(args[i], type)
+      return false
+  return true
+
+
+
+exports.instanceof = (value, type) =>
+  switch
+    when type is Boolean then return _.isBoolean(value)
+    when type is Number  then return _.isFinite(value)
+    when type is String  then return _.isString(value)
+    when type is Object  then return _.isPlainObject(value)
+    else                      return value instanceof type
+
+
+
+### @Public ###
 # 抛出异常
 # Sai系统层方案，以Sai标准封装error对象（兼容NodeJS原生error格式）
 ##
@@ -44,7 +64,7 @@ i18n = ({ message, en_message, zh_message }) =>
 
 
 
-### @PUBLIC ###
+### @Public ###
 # 异步睡眠
 # 借助await即可实现同步睡眠
 ##
@@ -53,7 +73,7 @@ exports.sleep = (ms) =>
 
 
 
-### @PUBLIC ###
+### @Public ###
 # (深度优先)遍历一颗树的全部叶子节点
 # callback(叶子key, 叶子value, 父节点parent)
 ##
@@ -77,7 +97,7 @@ traverseTreeEach = (node, key, parent, callback) ->
 
 
 
-### @PUBLIC ###
+### @Public ###
 # 以Sai协议编码 请求体/响应体
 # body是个json-object
 # 直接改写原body，而不是返回新body
@@ -107,7 +127,7 @@ encodeFile = (buffer) ->
 
 
 
-### @PUBLIC ###
+### @Public ###
 # 以Sai协议解码 请求体/响应体
 # body是个json-object
 # 直接改写原body，而不是返回新body

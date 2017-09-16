@@ -13,7 +13,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 单文档查询
   ##
   findOne: (query, options) =>
@@ -24,7 +24,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 多文档查询
   ##
   find: (query, options) =>
@@ -35,7 +35,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 统计文档数量
   ##
   count: (query, options) =>
@@ -140,7 +140,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 单文档插入
   ##
   insert: (doc) =>
@@ -154,7 +154,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 多文档插入
   ##
   insertMany: (docs) =>
@@ -188,7 +188,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 单文档更新
   ##
   update: (query, modifier, options) =>
@@ -199,7 +199,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 多文档更新
   ##
   updateMany: (query, modifier, options) =>
@@ -233,7 +233,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 单文档软删除
   ##
   remove: (query) =>
@@ -244,7 +244,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 多文档软删除
   ##
   removeMany: (query) =>
@@ -255,7 +255,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 单文档硬删除
   ##
   delete: (query, options) =>
@@ -265,7 +265,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 多文档硬删除
   ##
   deleteMany: (query, options) =>
@@ -275,7 +275,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 单文档软恢复
   ##
   restore: (query) =>
@@ -288,7 +288,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 多文档软恢复
   ##
   restoreMany: (query) =>
@@ -301,7 +301,7 @@ module.exports = class Collection
 
 
 
-  ### @PUBLIC ###
+  ### @Public ###
   # 聚合操作
   ##
   aggregate: (pipeline, options) =>

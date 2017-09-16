@@ -6,7 +6,7 @@
 
 
 
-### @PUBLIC ###
+### @Public ###
 # 语言，影响系统层面的异常信息
 # 不影响开发者自己设定的异常信息
 # 'en' - 英文
@@ -16,7 +16,7 @@ exports.language = 'en'
 
 
 
-### @PUBLIC ###
+### @Public ###
 # 全局异常捕获事件，可捕获到：
 # 1. NodeJS运行期异常
 # 2. Sai-error
