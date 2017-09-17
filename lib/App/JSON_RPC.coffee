@@ -3,7 +3,7 @@ errors = require('../errors')
 
 
 
-module.exports = class RPC
+module.exports = class JSON_RPC
 
   constructor: (options) ->
     @methods = options.methods
@@ -36,6 +36,7 @@ module.exports = class RPC
     catch error
       error = _.pick(error, ['code', 'message', 'data'])
 
+    # @TODO 处理json-rpc通知
     return{ jsonrpc: '2.0', result, error, id }
 
 

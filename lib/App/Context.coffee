@@ -41,18 +41,19 @@ module.exports = class Context
     a1 = args[0]
     a2 = args[1]
     a3 = args[2]
-    switch args.length
-      when 1
-        # @throw(message)
-        helper.throw({message: a1})
-      when 2
-        switch
-          # @throw(status, message)
-          when _.isNumber(a1) and _.isString(a2)      then helper.throw({status: a1,  message: a2})
-          # @throw(message, data)
-          when _.isString(a1) and _.isPlainObject(a2) then helper.throw({message: a1, data: a2})
-      when 3
-        # @throw(status, message, data)
-        helper.throw({status: a1, message: a2, data: a3})
-      else
-        helper.throw()
+
+    overload = helper.overload
+    switch
+      when overload(args, Number)                 then status  = a1
+      when overload(args, String)                 then message = a1
+      when overload(args, Object)                 then options = a1
+      when overload(args, Number, String)         then status  = a1; message = a2
+      when overload(args, Number, Object)         then status  = a1; options = a2
+      when overload(args, String, Object)         then message = a1; options = a2
+      when overload(args, Number, String, Object) then status  = a1; message = a2; options = a3
+
+    error        = new Error(message)
+    error.status = status
+    error.code   = options?.code
+    error.data   = options?.data
+    throw error

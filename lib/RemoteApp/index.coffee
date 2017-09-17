@@ -1,6 +1,5 @@
-_      = require('lodash')
-axios  = require('axios')
-helper = require('../helper')
+Task      = require('./Task')
+TaskGroup = require('./TaskGroup')
 
 
 
@@ -25,38 +24,54 @@ module.exports = class RemoteApp
   ### @Public ###
   # 调用远程method
   ##
-  call: (arg1, args...) =>
-    if _.isString(arg1)
-      body = @task(arg1, args...)  # call(method, params...)
+  call: (a1, params...) =>
+    if _.isString(a1)
+      method = a1
+      task = @task(method, params...)
+      setTimeout(task.send, 0)
+      return task
     else
-      body = arg1                  # call(tasks)
-
-    return axios
-      .post(@host, body)
-      .then(@onSuccess)
-      .catch(@onFailure)
+      tasks = a1
+      taskGroup = @taskGroup(tasks)
+      setTimeout(taskGroup.send, 0)
+      return taskGroup
 
 
 
   ### @Public ###
-  # 调用远程method
+  # 顺序调用远程method
+  ##
+  callSeq: (tasks) =>
+    taskGroup = @taskGroup(tasks)
+    setTimeout(taskGroup.sendSeq, 0)
+    return taskGroup
+
+
+
+  ### @Public ###
+  # 并行调用远程method
+  ##
+  callParal: (tasks) =>
+    taskGroup = @taskGroup(tasks)
+    setTimeout(taskGroup.sendParal, 0)
+    return taskGroup
+
+
+
+  ### @Public ###
+  # 包装任务
   ##
   task: (method, params...) =>
-    return{
-      jsonrpc: '2.0'
-      method: method
-      params: params
-    }
+    return new Task({
+      host: @host
+      method
+      params
+    })
 
 
 
-  onSuccess: (response) =>
-    helper.decodeBody(response.data)
-    return response.data
-
-
-
-  onFailure: ({response}) =>
-    responseBody = response.data
-    helper.decodeBody(responseBody)
-    return responseBody.error
+  taskGroup: (tasks) =>
+    return new TaskGroup({
+      host: @host
+      tasks
+    })

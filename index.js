@@ -1,16 +1,18 @@
 require('coffeescript/register')
 
-
-let Sai = require('./lib')
-
-Sai.config.language = 'zh'
-Sai.config.onCatch = (error) => {
-  console.log(error.message.red);
-}
-
-
-
 ;(async()=>{try{
+
+
+  var Sai = require('./lib')
+  var helper = require('./lib/helper')
+
+  Sai.config.language = 'zh'
+  Sai.config.onCatch = (error) => {
+    console.log(error.message.red);
+  }
+
+
+
 
 
   let app = new Sai.App({
@@ -21,8 +23,11 @@ Sai.config.onCatch = (error) => {
     return a + b
   })
 
-  app.io('count', function(a, b){
-    return this.call('add', a + b, 8)
+  app.io('count', async function(a, b){
+    r = Math.random()
+    r = parseInt(r * 3000)
+    await helper.sleep(1000)
+    return a
   })
 
   app.method('count')
@@ -31,13 +36,33 @@ Sai.config.onCatch = (error) => {
 
   let api = new Sai.RemoteApp('http://127.0.0.1:9000/')
 
-  let results = await api.call([
-    api.task('count', 4, 9),
-    api.task('count2', 17, 35)
-  ])
+  // api.call('count', new Date()).done((result)=>{
+  //   console.log(result);
+  // }).fail((error)=>{
+  //   console.log(error);
+  // })
+
+  api.callSeq([
+    api.task('count', 1),
+    api.task('count', 2),
+    api.task('count', 3),
+    api.task('count', 4),
+    api.task('count', 5),
+    api.task('count', 6),
+    api.task('count', 7),
+    api.task('count', 8),
+    api.task('count', 9),
+    api.task('count', 10),
+  ]).doneEach((result)=>{
+    console.log(result);
+  }).failEach((error)=>{
+    console.log(error)
+  }).done(()=>{
+    console.log('done');
+  })
 
 
-  console.log(results);
+  // console.log(tasks);
 
 
 
@@ -45,8 +70,3 @@ Sai.config.onCatch = (error) => {
 }catch(error){
   console.log(error);
 }})()
-
-
-
-
-module.exports = Sai
