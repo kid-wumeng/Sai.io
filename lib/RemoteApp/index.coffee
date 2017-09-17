@@ -1,3 +1,4 @@
+_         = require('lodash')
 Task      = require('./Task')
 TaskGroup = require('./TaskGroup')
 
