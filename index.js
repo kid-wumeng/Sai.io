@@ -13,8 +13,6 @@ Sai.config.onCatch = (error) => {
 ;(async()=>{try{
 
 
-
-
   let app = new Sai.App({
     port: 9000
   })
@@ -33,14 +31,15 @@ Sai.config.onCatch = (error) => {
 
   let api = new Sai.RemoteApp('http://127.0.0.1:9000/')
 
+  let results = await api.call([
+    api.task('count', 4, 9),
+    api.task('count2', 17, 35)
+  ])
 
-  // api.call([
-  //   api.task('Book.findOne', 4, 9),
-  //   api.task('Book.findOne', 17, 35)
-  // ])
 
-  result = await api.call('count', 4, 9)
-  console.log(result);
+  console.log(results);
+
+
 
 
 }catch(error){

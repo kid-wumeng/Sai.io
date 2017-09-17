@@ -1,12 +1,12 @@
-_                = require('lodash')
-config           = require('../config')
-helper           = require('../helper')
-IO               = require('./IO')
-Method           = require('./Method')
-Context          = require('./Context')
-Server           = require('./Server')
-IO_Not_Found     = require('./errors/IO_Not_Found')
-Method_Not_Found = require('./errors/Method_Not_Found')
+_        = require('lodash')
+config   = require('../config')
+helper   = require('../helper')
+errors   = require('../errors')
+IO       = require('./IO')
+Method   = require('./Method')
+Context  = require('./Context')
+Server   = require('./Server')
+JSON_RPC = require('./JSON_RPC')
 
 
 
@@ -58,6 +58,10 @@ module.exports = class App
       callback: @callback
     })
 
+    @jsonRPC = new JSON_RPC({
+      methods: @methods
+    })
+
 
 
   ### @Public ###
@@ -97,7 +101,7 @@ module.exports = class App
         io: io
       })
     else
-      IO_Not_Found(io_name)
+      IO_NOT_FOUND(io_name)
 
 
 
@@ -115,27 +119,20 @@ module.exports = class App
   call: (name, params...) =>
     io = @ios[name]
     if io
-      ctx = @formatContext(ctx)
+      ctx = @formatContext({})
       return io.call(ctx, params)
     else
-      IO_Not_Found(name)
+      throw errors.IO_NOT_FOUND(name)
 
-
-
-  ### @Private ###
-  callMethod: (name, params, ctx) =>
-    method = @methods[name]
-    if method
-      ctx = @formatContext(ctx)
-      return method.call(ctx, params)
-    else
-      Method_Not_Found(name)
 
 
 
   ### @Private ###
   formatContext: (ctx) =>
-    return Context.format(ctx, {ios: @ios, mount: @mount})
+    return Context.format(ctx, {
+      ios: @ios
+      mount: @mount
+    })
 
 
 
@@ -151,22 +148,10 @@ module.exports = class App
 
   callback: (ctx) =>
     try
-      await @callback_JSON_RPC(ctx)
+      @formatContext(ctx)
+      await @jsonRPC.execute(ctx)
     catch error
       @catch(ctx, error)
-
-
-
-  callback_JSON_RPC: (ctx) =>
-    method = ctx.requestBody.method
-    params = ctx.requestBody.params
-    id     = ctx.requestBody.id
-
-    result = await @callMethod(method, params, ctx)
-
-    ctx.responseBody.result  = result
-    ctx.responseBody.id      = id
-    ctx.responseBody.jsonrpc = '2.0'
 
 
 

@@ -51,9 +51,8 @@ module.exports = class RemoteApp
 
 
   onSuccess: (response) =>
-    responseBody = response.data
-    helper.decodeBody(responseBody)
-    return responseBody.result
+    helper.decodeBody(response.data)
+    return response.data
 
 
 

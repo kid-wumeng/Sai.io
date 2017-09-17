@@ -1,6 +1,6 @@
-_            = require('lodash')
-helper       = require('../helper')
-IO_Not_Found = require('./errors/IO_Not_Found')
+_      = require('lodash')
+helper = require('../helper')
+errors = require('../errors')
 
 
 
@@ -30,7 +30,7 @@ module.exports = class Context
       ctx.ioStack.pop()
       return result
     else
-      IO_Not_Found(name)
+      throw errors.IO_NOT_FOUND(name)
 
 
 
