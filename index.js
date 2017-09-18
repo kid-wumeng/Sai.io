@@ -28,10 +28,21 @@ require('coffeescript/register')
     r = parseInt(r * 3000)
     await helper.sleep(1000)
     return a
+
   })
 
   app.method('count')
   app.start()
+
+
+  code = new Sai.Code()
+  token = code.jwt.encode({
+    name: 'kid',
+    exp: 19999
+  }, 'hhhh')
+
+  a = code.jwt.decode(token, 'hhhh')
+  console.log(a);
 
 
   let api = new Sai.RemoteApp('http://127.0.0.1:9000/')
@@ -42,24 +53,24 @@ require('coffeescript/register')
   //   console.log(error);
   // })
 
-  api.callSeq([
-    api.task('count', 1),
-    api.task('count', 2),
-    api.task('count', 3),
-    api.task('count', 4),
-    api.task('count', 5),
-    api.task('count', 6),
-    api.task('count', 7),
-    api.task('count', 8),
-    api.task('count', 9),
-    api.task('count', 10),
-  ]).doneEach((result)=>{
-    console.log(result);
-  }).failEach((error)=>{
-    console.log(error)
-  }).done(()=>{
-    console.log('done');
-  })
+  // api.callSeq([
+  //   api.task('count', 1),
+  //   api.task('count', 2),
+  //   api.task('count', 3),
+  //   api.task('count', 4),
+  //   api.task('count', 5),
+  //   api.task('count', 6),
+  //   api.task('count', 7),
+  //   api.task('count', 8),
+  //   api.task('count', 9),
+  //   api.task('count', 10),
+  // ]).doneEach((result)=>{
+  //   console.log(result);
+  // }).failEach((error)=>{
+  //   console.log(error)
+  // }).done(()=>{
+  //   console.log('done');
+  // })
 
 
   // console.log(tasks);
