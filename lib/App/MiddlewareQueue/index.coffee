@@ -1,21 +1,21 @@
 module.exports = class Middleware
 
+
   constructor: (options) ->
     @mids = []
+
 
 
   use: (mid) =>
     @mids.push(mid)
 
 
-  dispatch: (ctx) =>
-    total = @mids.length
 
+  dispatch: (ctx) =>
     invoke = (i) =>
-      mid = @mids[i]
-      if i < total - 1
-        mid.call(ctx, -> invoke(i+1))
+      if i < @mids.length - 1
+        @mids[i].call(ctx, -> invoke(i+1))
       else
-        mid.call(ctx, ->)
+        @mids[i].call(ctx, ->)
 
     invoke(0)

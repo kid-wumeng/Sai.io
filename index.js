@@ -13,8 +13,8 @@ require('coffeescript/register')
 
 
 
-  Middleware = require('./lib/App/Middleware')
-  middleware = new Middleware()
+  MiddlewareQueue = require('./lib/App/MiddlewareQueue')
+  midQueue = new MiddlewareQueue()
 
 
   async function m1(next){
@@ -41,12 +41,12 @@ require('coffeescript/register')
   }
 
 
-  middleware.use(m1)
-  middleware.use(m2)
-  middleware.use(m3)
+  midQueue.use(m1)
+  midQueue.use(m2)
+  midQueue.use(m3)
 
   console.log('-------');
-  middleware.dispatch({name: 'kid'})
+  midQueue.dispatch({name: 'kid'})
 
 
 
