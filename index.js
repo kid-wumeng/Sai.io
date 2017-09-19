@@ -35,17 +35,40 @@ require('coffeescript/register')
   app.start()
 
 
-  code = new Sai.Code()
-  token = code.jwt.encode({
-    name: 'kid',
-    exp: 19999
-  }, 'hhhh')
 
-  a = code.jwt.decode(token, 'hhhh')
-  console.log(a);
+  app.on('loading', function(n, a){
+    console.log(n);
+    console.log(a);
+  })
 
 
-  let api = new Sai.RemoteApp('http://127.0.0.1:9000/')
+
+  app.topic('addComment', function(data){
+    return true
+  })
+
+  setTimeout(()=>{
+    app.publish('addComment', {name: 'kid'})
+  }, 5000)
+
+  //
+  // app.subscribe('addComment', (data)=>{
+  //
+  // })
+
+
+
+  // code = new Sai.Code()
+  // token = code.jwt.encode({
+  //   name: 'kid',
+  //   exp: 19999
+  // }, 'hhhh')
+  //
+  // a = code.jwt.decode(token, 'hhhh')
+  // console.log(a);
+  //
+  //
+  // let api = new Sai.RemoteApp('http://127.0.0.1:9000/')
 
   // api.call('count', new Date()).done((result)=>{
   //   console.log(result);
@@ -74,8 +97,6 @@ require('coffeescript/register')
 
 
   // console.log(tasks);
-
-
 
 
 }catch(error){

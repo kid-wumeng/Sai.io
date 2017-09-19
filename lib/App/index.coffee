@@ -4,8 +4,11 @@ helper   = require('../helper')
 errors   = require('../errors')
 IO       = require('./IO')
 Method   = require('./Method')
+Topic    = require('./Realtime/Topic')
+Event    = require('./Realtime/Event')
 Context  = require('./Context')
 Server   = require('./Server')
+Realtime = require('./Realtime')
 JSON_RPC = require('./JSON_RPC')
 
 
@@ -51,6 +54,8 @@ module.exports = class App
     @port    = options.port ? 80
     @ios     = {}
     @methods = {}
+    @topics  = {}
+    @events  = {}
     @mounts  = {}
 
     @server = new Server({
@@ -76,8 +81,7 @@ module.exports = class App
   # 注册io
   ##
   io: (name, func) =>
-    io = new IO({name, func})
-    @ios[name] = io
+    @ios[name] = new IO({name, func})
 
 
 
@@ -106,6 +110,23 @@ module.exports = class App
 
 
   ### @Public ###
+  # 注册主题
+  ##
+  topic: (name, filter) =>
+    @topics[name] = new Topic({name, filter})
+
+
+
+  ### @Public ###
+  # 注册主题
+  ##
+  on: (name, callback) =>
+    @events[name] = new Event({name, callback})
+
+
+
+
+  ### @Public ###
   # 挂载属性到ctx上
   ##
   mount: (key, value) =>
@@ -125,6 +146,12 @@ module.exports = class App
       throw errors.IO_NOT_FOUND(name)
 
 
+  ### @Public ###
+  # 本地发布实时消息
+  ##
+  publish: (topic, data) =>
+    @realtime.publish(topic, data)
+
 
 
   ### @Private ###
@@ -140,7 +167,12 @@ module.exports = class App
   # 启动app
   ##
   start: (message) =>
-    @server.start()
+    server = @server.start()
+    @realtime = new Realtime({
+      server: server
+      topics: @topics
+      events: @events
+    })
     message ?= "sai-io app:#{@port} start ~ !"
     console.log message.green
 

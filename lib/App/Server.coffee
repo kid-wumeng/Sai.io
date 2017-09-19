@@ -21,7 +21,8 @@ module.exports = class Method
     @koa.use(@encodeResponseBody)
     @koa.use(@setResponseBody)
     @koa.use(@callback)
-    @koa.listen(@port)
+    return @koa.listen(@port)
+
 
 
   getRequestBody: (ctx, next) =>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  <script type="text/javascript">
+    var ws = new WebSocket('ws://localhost:9000/')
+    ws.onmessage = function(evt){
+      console.log(evt)
+      console.log('-------')
+    }
+    ws.onopen = function (evt) {
+      ws.send(JSON.stringify({
+        event: 'loading',
+      }))
+    }
+  </script>
+</body>
+</html>
