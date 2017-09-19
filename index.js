@@ -13,43 +13,58 @@ require('coffeescript/register')
 
 
 
+  Middleware = require('./lib/App/Middleware')
+  middleware = new Middleware()
 
 
-  let app = new Sai.App({
-    port: 9000
-  })
+  async function m1(next){
+    console.log('m1 start');
+    this.name = 'yyy'
+    await next()
+    console.log('m1 end');
+  }
 
-  app.io('add', function(a, b){
-    return a + b
-  })
+  async function m2(next){
+    console.log('m2 start');
+    await helper.sleep(3000)
 
-  app.io('count', async function(a, b){
-    r = Math.random()
-    r = parseInt(r * 3000)
-    await helper.sleep(1000)
-    return a
+    await next()
+    console.log(this.name);
+    await helper.sleep(3000)
+    console.log('m2 end');
+  }
 
-  })
-
-  app.method('count')
-  app.start()
-
-
-
-  app.on('loading', function(n, a){
-    console.log(n);
-    console.log(a);
-  })
+  async function m3(next){
+    console.log('m3 start');
+    await next()
+    console.log('m3 end');
+  }
 
 
+  middleware.use(m1)
+  middleware.use(m2)
+  middleware.use(m3)
 
-  app.topic('addComment', function(data){
-    return true
-  })
+  console.log('-------');
+  middleware.dispatch({name: 'kid'})
 
-  setTimeout(()=>{
-    app.publish('addComment', {name: 'kid'})
-  }, 5000)
+
+
+
+  // app.on('loading', function(n, a){
+  //   console.log(n);
+  //   console.log(a);
+  // })
+
+
+
+  // app.topic('addComment', function(data){
+  //   return true
+  // })
+  //
+  // setTimeout(()=>{
+  //   app.publish('addComment', {name: 'kid'})
+  // }, 5000)
 
   //
   // app.subscribe('addComment', (data)=>{
