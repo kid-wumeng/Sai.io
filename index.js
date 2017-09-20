@@ -8,45 +8,35 @@ require('coffeescript/register')
 
   Sai.config.language = 'zh'
   Sai.config.onCatch = (error) => {
-    console.log(error.message.red);
+    // console.log(error.message.red);
+    // console.log(error.stack);
   }
 
 
+  app = new Sai.App()
 
-  MiddlewareQueue = require('./lib/App/MiddlewareQueue')
-  midQueue = new MiddlewareQueue()
+  app.io('shop.findBook', function(name, age){
+    console.log(age.getFullYear());
+    return {flag: new Date()}
+  })
+
+  app.method('shop.findBook')
+
+  app.listen(9000)
 
 
-  async function m1(next){
-    console.log('m1 start');
-    this.name = 'yyy'
-    await next()
-    console.log('m1 end');
+  api = new Sai.RemoteApp('ws://127.0.0.1:9000')
+
+  done = function(result){
+  }
+  fail = function(error){
   }
 
-  async function m2(next){
-    console.log('m2 start');
-    await helper.sleep(3000)
-
-    await next()
-    console.log(this.name);
-    await helper.sleep(3000)
-    console.log('m2 end');
-  }
-
-  async function m3(next){
-    console.log('m3 start');
-    await next()
-    console.log('m3 end');
-  }
-
-
-  midQueue.use(m1)
-  midQueue.use(m2)
-  midQueue.use(m3)
-
-  console.log('-------');
-  midQueue.dispatch({name: 'kid'})
+  api.callBatch([
+    api.task('shop.findBook', 'kid', new Date()).done(done).fail(fail),
+    api.task('shop.findBook2', 'kid', 6).done(done).fail(fail)
+  ]).done(()=>{
+  })
 
 
 

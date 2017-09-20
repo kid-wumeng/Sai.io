@@ -1,14 +1,18 @@
-WebSocket = require('ws')
-errors    = require('../../errors')
+WS     = require('ws')
+errors = require('../../errors')
 
 
-module.exports = class Realtime
+module.exports = class WebSocket
 
-  constructor: ({server, topics, events}) ->
-    @server = new WebSocket.Server({server})
-    @server.on('connection', @onCollection)
-    @topics = topics
-    @events = events
+  constructor: ->
+    @wss = null
+
+
+
+  createServer: (server) =>
+    wss = new WS.Server({server})
+    wss.on('connection', @onCollection)
+    return server
 
 
 
@@ -19,14 +23,8 @@ module.exports = class Realtime
 
   onMessage: (socket, packet) ->
     packet = JSON.parse(packet)
-    event  = packet.event
-    params = packet.params ? []
+    callbackByRPC()
 
-    event = @events[event]
-    if(event)
-      event.callback.call(socket, params...)
-    else
-      throw errors.EVENT_NOT_FOUND(event)
 
 
 

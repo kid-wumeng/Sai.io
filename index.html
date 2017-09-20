@@ -13,7 +13,9 @@
     }
     ws.onopen = function (evt) {
       ws.send(JSON.stringify({
-        event: 'loading',
+        method: 'shop.findBook',
+        params: ['kid', 6],
+        id: 6666
       }))
     }
   </script>

@@ -2,14 +2,10 @@ _        = require('lodash')
 config   = require('../config')
 helper   = require('../helper')
 errors   = require('../errors')
-IO       = require('./IO')
-Method   = require('./Method')
-Topic    = require('./Realtime/Topic')
-Event    = require('./Realtime/Event')
 Context  = require('./Context')
-Server   = require('./Server')
-Realtime = require('./Realtime')
-JSON_RPC = require('./JSON_RPC')
+Store     = require('./Store')
+Server = require('./Server')
+RPC = require('./RPC')
 
 
 
@@ -51,86 +47,25 @@ JSON_RPC = require('./JSON_RPC')
 module.exports = class App
 
   constructor: (options={}) ->
-    @port    = options.port ? 80
-    @ios     = {}
-    @methods = {}
-    @topics  = {}
-    @events  = {}
-    @mounts  = {}
-
-    @server = new Server({
-      port: @port
-      callback: @callback
-    })
-
-    @jsonRPC = new JSON_RPC({
-      methods: @methods
-    })
+    @store  = new Store()
+    @server = new Server(@callback)
+    @rpc    = new RPC(@store)
 
 
-
-  ### @Public ###
-  # 配置
-  ##
-  config: (key, value) =>
-    @[key] = value
+  io: (args...) =>
+    @store.io(args...)
 
 
-
-  ### @Public ###
-  # 注册io
-  ##
-  io: (name, func) =>
-    @ios[name] = new IO({name, func})
-
-
-
-  ### @Public ###
-  # 注册method
-  ##
   method: (args...) =>
-    a1 = args[0]
-    a2 = args[1]
-    a3 = args[2]
-    switch
-      when helper.overload(args, String)                 then method_name = a1; io_name = a1; options = {}
-      when helper.overload(args, String, String)         then method_name = a1; io_name = a2; options = {}
-      when helper.overload(args, String, Object)         then method_name = a1; io_name = a1; options = a2
-      when helper.overload(args, String, String, Object) then method_name = a1; io_name = a2; options = a3
-
-    io = @ios[io_name]
-    if io
-      @methods[method_name] = new Method({
-        name: method_name
-        io: io
-      })
-    else
-      IO_NOT_FOUND(io_name)
+    @store.method(args...)
 
 
-
-  ### @Public ###
-  # 注册主题
-  ##
-  topic: (name, filter) =>
-    @topics[name] = new Topic({name, filter})
+  topic: (args...) =>
+    @store.topic(args...)
 
 
-
-  ### @Public ###
-  # 注册主题
-  ##
-  on: (name, callback) =>
-    @events[name] = new Event({name, callback})
-
-
-
-
-  ### @Public ###
-  # 挂载属性到ctx上
-  ##
-  mount: (key, value) =>
-    @mounts[key] = value
+  mount: (args...) =>
+    @store.mount(args...)
 
 
 
@@ -164,26 +99,19 @@ module.exports = class App
 
 
   ### @Public ###
-  # 启动app
+  # 开始监听端口
   ##
-  start: (message) =>
-    server = @server.start()
-    @realtime = new Realtime({
-      server: server
-      topics: @topics
-      events: @events
-    })
-    message ?= "sai-io app:#{@port} start ~ !"
-    console.log message.green
+  listen: (port) =>
+    @server.listen(port)
+    console.log "sai-io app:#{port} start ~ !".green
 
 
 
-  callback: (ctx) =>
+  callback: (packet) =>
     try
-      @formatContext(ctx)
-      await @jsonRPC.execute(ctx)
+      return @rpc.call({}, packet)
     catch error
-      @catch(ctx, error)
+      console.log 111
 
 
 

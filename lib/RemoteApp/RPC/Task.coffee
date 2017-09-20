@@ -1,15 +1,12 @@
-axios  = require('axios')
 uuidv4 = require('uuid/v4')
-helper = require('../helper')
 
 
 
 module.exports = class Task
 
-  constructor: (options={}) ->
-    @host   = options.host
-    @method = options.method
-    @params = options.params
+  constructor: (method, params) ->
+    @method = method
+    @params = params
     @id     = uuidv4()
 
     @dones  = []
@@ -39,23 +36,12 @@ module.exports = class Task
 
 
 
-  send: () =>
-    requestBody =
+  getPacket: =>
+    return
       jsonrpc: '2.0'
-      id:     @id
       method: @method
       params: @params
-
-    helper.encodeBody(requestBody)
-    axios
-      .post(@host, requestBody)
-      .then(@receive)
-
-
-
-  receive: (response) =>
-    helper.decodeBody(response.data)
-    @complete(response.data)
+      id:     @id
 
 
 
