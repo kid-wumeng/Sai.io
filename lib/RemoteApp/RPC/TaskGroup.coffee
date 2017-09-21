@@ -1,7 +1,3 @@
-axios  = require('axios')
-
-
-
 module.exports = class TaskGroup
 
   constructor: (tasks) ->

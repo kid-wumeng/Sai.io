@@ -1,6 +1,7 @@
 http      = require('http')
 WebSocket = require('ws')
-helper    = require('../../helper')
+SaiJSON   = require('../../assets/SaiJSON')
+adapter   = require('../../assets/SaiJSONAdapter')
 
 
 
@@ -8,7 +9,8 @@ module.exports = class Server
 
 
   constructor: (callback) ->
-    @wss = null
+    @wss      = null
+    @saiJSON  = new SaiJSON(adapter)
     @callback = callback
 
 
@@ -33,9 +35,14 @@ module.exports = class Server
 
 
   handleCall: (socket, message) =>
+    # 收信
     message = JSON.parse(message)
-    helper.decodeBody(message.packet)
-    message.packet = await @callback(message.packet)
-    helper.encodeBody(message.packet)
-    message = JSON.stringify(message)
-    socket.send(message)
+    packet  = message.packet
+    @saiJSON.decode packet, =>
+      # 执行
+      packet = await @callback(packet)
+      # 回信
+      @saiJSON.encode packet, =>
+        message.packet = packet
+        message = JSON.stringify(message)
+        socket.send(message)

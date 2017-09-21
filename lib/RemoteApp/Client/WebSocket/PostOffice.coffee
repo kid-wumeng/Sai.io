@@ -1,28 +1,29 @@
-uuidv4 = require('uuid/v4')
-helper = require('../../../helper')
+uuidv4  = require('uuid/v4')
+SaiJSON = require('../../../assets/SaiJSON')
 
 
 
 module.exports = class PostOffice
 
 
-  constructor: (socket) ->
-    @socket = socket
-    @dict   = {}
+  constructor: (socket, adapter) ->
+    @socket  = socket
+    @saiJSON = new SaiJSON(adapter)
+    @dict    = {}
 
     @socket.on('message', @receive)
 
 
 
   send: (packet, callback) =>
-    {stamp, message} = @seal(packet)
-    @dict[stamp] = callback
-    @socket.send(message)
+    @saiJSON.encode packet, =>
+      {stamp, message} = @seal(packet)
+      @dict[stamp] = callback
+      @socket.send(message)
 
 
 
-  seal: (packet) =>
-    helper.encodeBody(packet)
+  seal: (packet, callback) =>
     stamp   = uuidv4()
     message = {stamp, packet}
     message = JSON.stringify(message)
@@ -33,15 +34,13 @@ module.exports = class PostOffice
   receive: (message) =>
     {stamp, packet} = @unseal(message)
     callback = @dict[stamp]
-
     if callback
       delete @dict[stamp]
-      callback(packet)
+      @saiJSON.decode packet, => callback(packet)
 
 
 
   unseal: (message) =>
     message = JSON.parse(message)
     {stamp, packet} = message
-    helper.decodeBody(packet)
     return {stamp, packet}

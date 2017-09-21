@@ -1,44 +1,13 @@
-Client = require('./Client')
-RPC    = require('./RPC')
+SaiJSONAdapter = require('../assets/SaiJSONAdapter')
+RemoteApp      = require('./RemoteApp')
 
 
 
-module.exports = class RemoteApp
-
-
-  constructor: (url, options={}) ->
-    @client = new Client(url)
-    @rpc    = new RPC(@client)
-
-
-
-  call: (method, params...) ->
-    return @rpc.call(method, params)
+RemoteApp.adapter = {}
+RemoteApp.adapter.isFile     = SaiJSONAdapter.isFile
+RemoteApp.adapter.encodeFile = SaiJSONAdapter.encodeFile
+RemoteApp.adapter.decodeFile = SaiJSONAdapter.decodeFile
 
 
 
-  callBatch: (tasks) ->
-    return @rpc.callBatch(tasks)
-
-
-
-  callSeq: (tasks) ->
-    return @rpc.callSeq(tasks)
-
-
-
-  callParal: (tasks) ->
-    return @rpc.callParal(tasks)
-
-
-
-  task: (method, params...) =>
-    return @rpc.task(method, params)
-
-
-
-  on: (event, callback) ->
-    if not ['open', 'close', 'error'].includes(event)
-      throw 'Sorry, your only listen the {open}, {close} or {error} event.'
-
-    @client.on(event, callback)
+module.exports = RemoteApp

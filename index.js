@@ -8,16 +8,15 @@ require('coffeescript/register')
 
   Sai.config.language = 'zh'
   Sai.config.onCatch = (error) => {
-    // console.log(error.message.red);
-    // console.log(error.stack);
+    console.log(error.message.red);
+    console.log(error.stack);
   }
 
 
   app = new Sai.App()
 
-  app.io('shop.findBook', function(name, age){
-    console.log(age.getFullYear());
-    return {flag: new Date()}
+  app.io('shop.findBook', function(name, file){
+    return {flag: require('fs').readFileSync('./yyy.jpg')}
   })
 
   app.method('shop.findBook')
@@ -27,16 +26,17 @@ require('coffeescript/register')
 
   api = new Sai.RemoteApp('ws://127.0.0.1:9000')
 
-  done = function(result){
-  }
-  fail = function(error){
-  }
-
-  api.callBatch([
-    api.task('shop.findBook', 'kid', new Date()).done(done).fail(fail),
-    api.task('shop.findBook2', 'kid', 6).done(done).fail(fail)
-  ]).done(()=>{
-  })
+  // done = function(result){
+  //   console.log(result.flag.toString());
+  // }
+  // fail = function(error){
+  // }
+  //
+  // api.callBatch([
+  //   api.task('shop.findBook', 'kid', new Buffer('wumeng')).done(done).fail(fail),
+  //   api.task('shop.findBook2', 'kid', 6).done(done).fail(fail)
+  // ]).done(()=>{
+  // })
 
 
 

@@ -5,19 +5,21 @@
   <title>Document</title>
 </head>
 <body>
+
+  <input type="file" id="input"/>
+  <img id="img"/>
+
+  <script type="text/javascript" src="./dist/remote-app.js"></script>
   <script type="text/javascript">
-    var ws = new WebSocket('ws://localhost:9000/')
-    ws.onmessage = function(evt){
-      console.log(evt)
-      console.log('-------')
-    }
-    ws.onopen = function (evt) {
-      ws.send(JSON.stringify({
-        method: 'shop.findBook',
-        params: ['kid', 6],
-        id: 6666
-      }))
-    }
+
+    document.getElementById('input').addEventListener('change', (event)=>{
+      file = event.target.files[0]
+      api  = new Sai.RemoteApp('ws://localhost:9000')
+      api.call('shop.findBook', 'kid-web', file).done((result)=>{
+        document.getElementById('img').src = 'data:image;base64,' + result.flag
+      })
+    })
+
   </script>
 </body>
 </html>
