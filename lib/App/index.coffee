@@ -6,6 +6,7 @@ Context  = require('./Context')
 Store     = require('./Store')
 Server = require('./Server')
 RPC = require('./RPC')
+Document = require('./Document')
 
 
 
@@ -48,7 +49,8 @@ module.exports = class App
 
   constructor: (options={}) ->
     @store  = new Store()
-    @server = new Server(@callback)
+    @doc    = new Document(@store)
+    @server = new Server(@callback, @doc)
     @rpc    = new RPC(@store)
 
 

@@ -11,7 +11,7 @@ Topic  = require('./Topic')
 
 
 
-module.exports = class App
+module.exports = class Store
 
   constructor: (options={}) ->
     @ios     = {}
@@ -46,12 +46,9 @@ module.exports = class App
 
     io = @ios[io_name]
     if io
-      @methods[method_name] = new Method({
-        name: method_name
-        io: io
-      })
+      @methods[method_name] = new Method(method_name, io, options)
     else
-      IO_NOT_FOUND(io_name)
+      throw errors.IO_NOT_FOUND(io_name)
 
 
 

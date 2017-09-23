@@ -8,10 +8,11 @@ adapter   = require('../../assets/SaiJSONAdapter')
 module.exports = class Server
 
 
-  constructor: (callback) ->
+  constructor: (callback, doc) ->
     @wss      = null
     @saiJSON  = new SaiJSON(adapter)
     @callback = callback
+    @doc      = doc
 
 
 
@@ -24,8 +25,13 @@ module.exports = class Server
 
 
   docs: (req, res) =>
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end("Welcome to the homepage!");
+    if req.url is '/'
+      html = await @doc.render()
+      res.writeHead(200, {'Content-Type': 'text/html'})
+      res.end(html)
+    else
+      res.writeHead(204)
+      res.end()
 
 
 

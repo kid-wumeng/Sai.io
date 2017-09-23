@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>api doc</title>
+
+  <style media="screen">
+    body{
+      background-color: rgb(250, 252, 252);
+    }
+
+    table{
+      margin: 60px auto;
+      width: 70%;
+      table-layout: fixed;
+      background-color: white;
+      border-collapse: collapse;
+    }
+
+    tr{
+      border-top: 1px solid #EFF2F4;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    tr:last-child{
+      border-bottom: 1px solid #EFF2F4;
+    }
+
+    tr:nth-child(even){
+      background-color: rgb(250, 252, 252);
+    }
+
+    tr:hover{
+      cursor: pointer;
+    }
+
+    td.proto{
+      padding: 12px 16px;
+      font-family: 'Ubuntu Mono', system-ui;
+      font-size: 15px;
+    }
+
+    td.proto .name{
+      font-weight: 600;
+      color: #07A1EE;
+    }
+
+    td.proto .paramsString{
+      color: #BBB;
+    }
+
+    td.desc{
+      font-weight: 500;
+      font-size: 13px;
+      color: #4c555a;
+    }
+  </style>
+
+</head>
+<body>
+
+
+  <table>
+  {{ #methods }}
+    <tr>
+      <td class="proto">
+        <span class="name">{{ name }}</span>
+        <span class="paramsString">{{ paramsString }}</span>
+      </td>
+      <td class="desc">{{ desc }}</td>
+    </tr>
+  {{ /methods }}
+  </table>
+
+</body>
+</html>

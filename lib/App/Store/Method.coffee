@@ -1,8 +1,10 @@
 module.exports = class Method
 
-  constructor: (options) ->
-    @name = options.name
-    @io   = options.io
+  constructor: (name, io, options={}) ->
+    @name   = name
+    @io     = io
+    @desc   = options.desc ? ''
+    @params = options.params ? []
 
 
   ### @Protected ###

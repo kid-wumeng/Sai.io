@@ -12,14 +12,63 @@ require('coffeescript/register')
     console.log(error.stack);
   }
 
-
   app = new Sai.App()
 
-  app.io('shop.findBook', function(name, file){
+  app.io('wiki.getSubjects', function(name, file){
+    return {flag: require('fs').readFileSync('./yyy.jpg')}
+  })
+  app.io('user.login', function(name, file){
+    return {flag: require('fs').readFileSync('./yyy.jpg')}
+  })
+  app.io('user.getFeeds', function(name, file){
+    return {flag: require('fs').readFileSync('./yyy.jpg')}
+  })
+  app.io('bbs.addPost', function(name, file){
     return {flag: require('fs').readFileSync('./yyy.jpg')}
   })
 
-  app.method('shop.findBook')
+  app.method('wiki.getSubjects', {
+    desc: '获取作品列表',
+    params: [{
+      name: 'options',
+      subs: [{
+        name: 'q'
+      },{
+        name: 'page'
+      },{
+        name: 'size'
+      }]
+    }]
+  })
+
+  app.method('user.login', {
+    desc: '登录',
+    params: [{
+      name: 'email'
+    },{
+      name: 'password'
+    }]
+  })
+
+  app.method('user.getFeeds', {
+    desc: '获取用户动态',
+    params: [{
+      name: 'id'
+    }]
+  })
+
+  app.method('bbs.addPost', {
+    desc: '发帖',
+    params: [{
+      name: 'forum.id'
+    },{
+      name: 'title'
+    },{
+      name: 'content'
+    },{
+      name: 'isPushToTimeline'
+    }]
+  })
 
   app.listen(9000)
 
