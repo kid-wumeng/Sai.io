@@ -1,15 +1,11 @@
-uuidv4 = require('uuid/v4')
-Task   = require('../Task')
+Task = require('../Task')
 
 
 
 module.exports = class Task extends Task
 
-  constructor: ({ method, path, data, global_dones, global_fails }) ->
-    super(
-      global_dones,
-      global_fails
-    )
+  constructor: ({method, path, data, store}) ->
+    super(store)
     @method = method
     @path   = path
     @data   = data

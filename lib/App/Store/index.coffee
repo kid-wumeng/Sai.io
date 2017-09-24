@@ -82,7 +82,7 @@ module.exports = class Store
   # 注册主题
   ##
   topic: (name, filter) =>
-    @topics[name] = new Topic({name, filter})
+    @topics[name] = new Topic(name, filter)
 
 
 

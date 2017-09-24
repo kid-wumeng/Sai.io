@@ -5,15 +5,14 @@ TaskGroup = require('./TaskGroup')
 
 module.exports = class RPC
 
-  constructor: (client, global_dones, global_fails) ->
-    @client       = client
-    @global_dones = global_dones
-    @global_fails = global_fails
+  constructor: (client, store) ->
+    @client = client
+    @store  = store
 
 
 
   call: (method, params) =>
-    task = new Task(method, params, @global_dones, @global_fails)
+    task = new Task(method, params, @store)
     @send(task)
     return task
 

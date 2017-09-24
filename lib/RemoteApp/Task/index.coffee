@@ -4,14 +4,10 @@ REQUEST_TIMEOUT = require('../../errors/REQUEST_TIMEOUT')
 
 module.exports = class Task
 
-  constructor: (global_dones, global_fails) ->
-
-    @global_dones = global_dones
-    @global_fails = global_fails
-
+  constructor: (store) ->
+    @store  = store
     @dones  = []
     @fails  = []
-
     @result = null
     @error  = null
 
@@ -48,7 +44,7 @@ module.exports = class Task
     if @dones.length
       for done in @dones then done(result, @)
     else
-      for done in @global_dones then done(result, @)
+      @store.emit('done', result)
 
 
 
@@ -56,7 +52,7 @@ module.exports = class Task
     if @fails.length
       for fail in @fails then fail(error, @)
     else
-      for fail in @global_fails then fail(error, @)
+      @store.emit('fail', error)
 
 
 

@@ -1,6 +1,8 @@
-Client = require('./Client')
-RPC    = require('./RPC')
-REST   = require('./REST')
+Client   = require('./Client')
+Store    = require('./Store')
+RPC      = require('./RPC')
+REST     = require('./REST')
+Realtime = require('./Realtime')
 
 
 
@@ -21,12 +23,11 @@ module.exports = class RemoteApp
       reconnectDecay:       1.5
     }, options)
 
-    @global_dones = []
-    @global_fails = []
-
-    @client = new Client(url, RemoteApp.adapter, options)
-    @rpc    = new RPC(@client, @global_dones, @global_fails)
-    @rest   = new REST(@client, @global_dones, @global_fails)
+    @client   = new Client(url, RemoteApp.adapter, options)
+    @store    = new Store()
+    @rpc      = new RPC(@client, @store)
+    @rest     = new REST(@client, @store)
+    @realtime = new Realtime(@client, @store)
 
 
   call: (method, params...) ->
@@ -60,14 +61,19 @@ module.exports = class RemoteApp
 
 
   done: (callback) =>
-    @global_dones.push(callback)
+    @store.done(callback)
     return @
 
 
 
   fail: (callback) =>
-    @global_fails.push(callback)
+    @store.fail(callback)
     return @
+
+
+
+  subscribe: (topic, callback) ->
+    @store.subscribe(topic, callback)
 
 
 

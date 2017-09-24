@@ -1,4 +1,5 @@
-WebSocket = require('ws')
+WebSocket   = require('ws')
+BAD_NETWORK = require('../../../errors/BAD_NETWORK')
 
 
 
@@ -21,7 +22,6 @@ module.exports = class Socket
 
     @first         = true
     @firstMessages = []
-    @readyMessages = []
 
     @connect()
 
@@ -107,7 +107,7 @@ module.exports = class Socket
     else if @isOpen
       @ws.send(message)
     else
-      @readyMessages.push(message)
+      throw BAD_NETWORK()
 
 
 

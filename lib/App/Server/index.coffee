@@ -24,6 +24,11 @@ module.exports = class Server
 
 
 
+  getSockets: =>
+    return @wss.clients
+
+
+
   docs: (req, res) =>
     if req.url is '/'
       html = await @doc.render()

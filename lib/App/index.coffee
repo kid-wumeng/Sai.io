@@ -7,6 +7,7 @@ Store    = require('./Store')
 Server   = require('./Server')
 RPC      = require('./RPC')
 REST     = require('./REST')
+Realtime = require('./Realtime')
 Document = require('./Document')
 
 
@@ -49,11 +50,12 @@ Document = require('./Document')
 module.exports = class App
 
   constructor: (options={}) ->
-    @store  = new Store()
-    @doc    = new Document(@store)
-    @server = new Server(@callback, @doc)
-    @rpc    = new RPC(@store)
-    @rest   = new REST(@store)
+    @store    = new Store()
+    @doc      = new Document(@store)
+    @server   = new Server(@callback, @doc)
+    @rpc      = new RPC(@store)
+    @rest     = new REST(@store)
+    @realtime = new Realtime(@store, @server)
 
 
   io: (args...) =>
@@ -92,8 +94,8 @@ module.exports = class App
   ### @Public ###
   # 本地发布实时消息
   ##
-  publish: (topic, data) =>
-    @realtime.publish(topic, data)
+  publish: (topic, params...) =>
+    @realtime.publish(topic, params)
 
 
 

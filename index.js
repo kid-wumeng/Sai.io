@@ -22,17 +22,34 @@ require('coffeescript/register')
 
   app.get('books/:id/:name', 'shop.findBook')
 
+  app.topic('timeline', function(a, b){
+    return true
+  })
+
+
   app.listen(9000)
+
+
+  setTimeout(function(){
+    app.publish('timeline', 'kid', 18)
+  }, 1000)
 
 
   api = new Sai.RemoteApp('ws://127.0.0.1:9000')
 
-  api.fail((error)=>{
-    console.log(error.message);
+  api.subscribe('timeline', function(a, b){
+    console.log('-=-=');
+    console.log(a);
+    console.log(typeof b);
   })
 
 
-  api.get('bookss/6/3rd').done(result => console.log(result))
+  // api.fail((error)=>{
+  //   console.log(error.message);
+  // })
+
+
+  // api.get('bookss/6/3rd').done(result => console.log(result))
 
   // done = function(result){
   //   console.log(result.flag.toString());

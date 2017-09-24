@@ -4,10 +4,9 @@ Task = require('./Task')
 
 module.exports = class RPC
 
-  constructor: (client, global_dones, global_fails) ->
+  constructor: (client, store) ->
     @client = client
-    @global_dones = global_dones
-    @global_fails = global_fails
+    @store  = store
 
 
 
@@ -15,8 +14,7 @@ module.exports = class RPC
     task = new Task({
       method: 'GET'
       path: path
-      global_dones: @global_dones
-      global_fails: @global_fails
+      store: @store
     })
     @send(task)
     return task

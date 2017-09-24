@@ -1,5 +1,5 @@
 module.exports = class Topic
 
-  constructor: (options) ->
-    @name   = options.name
-    @filter = options.filter ? null
+  constructor: (name, filter=null) ->
+    @name   = name
+    @filter = filter

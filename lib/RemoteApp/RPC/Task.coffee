@@ -5,11 +5,8 @@ Task   = require('../Task')
 
 module.exports = class Task extends Task
 
-  constructor: (method, params, global_dones, global_fails) ->
-    super(
-      global_dones,
-      global_fails
-    )
+  constructor: (method, params, store) ->
+    super(store)
     @method = method
     @params = params
     @id     = uuidv4()
