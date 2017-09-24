@@ -1,3 +1,4 @@
+EventBus   = require('./EventBus')
 Socket     = require('./Socket')
 PostOffice = require('./PostOffice')
 
@@ -6,9 +7,9 @@ PostOffice = require('./PostOffice')
 module.exports = class WebSocket
 
   constructor: (url, adapter, options) ->
-    @eventCenter = new EventCenter()
-    @socket      = new Socket(url, adapter, options, @eventCenter)
-    @postOffice  = new PostOffice(adapter, @socket, @eventCenter)
+    @eventBus   = new EventBus()
+    @socket     = new Socket(url, adapter, options, @eventBus)
+    @postOffice = new PostOffice(adapter, @socket, @eventBus)
 
 
   send: (packet, callback) ->
@@ -16,4 +17,4 @@ module.exports = class WebSocket
 
 
   on: (event, callback) ->
-    @eventCenter.on(event, callback)
+    @eventBus.on(event, callback)

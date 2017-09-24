@@ -10,3 +10,7 @@ module.exports = class Client
 
   send: (packet, callback) ->
     @webSocket.send(packet, callback)
+
+
+  on: (event, callback) ->
+    @webSocket.on(event, callback)

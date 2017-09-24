@@ -6,13 +6,13 @@ SaiJSON = require('../../../assets/SaiJSON')
 module.exports = class PostOffice
 
 
-  constructor: (adapter, socket, eventCenter) ->
-    @saiJSON     = new SaiJSON(adapter)
-    @socket      = socket
-    @eventCenter = eventCenter
-    @dict        = {}
+  constructor: (adapter, socket, eventBus) ->
+    @saiJSON  = new SaiJSON(adapter)
+    @socket   = socket
+    @eventBus = eventBus
+    @dict     = {}
 
-    @eventCenter.on('message', @receive)
+    @eventBus.on('message', @receive)
 
 
 

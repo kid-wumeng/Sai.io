@@ -5,10 +5,10 @@ WebSocket = require('ws')
 module.exports = class Socket
 
 
-  constructor: (url, adapter, options, eventCenter) ->
-    @url         = url
-    @adapter     = adapter
-    @eventCenter = eventCenter
+  constructor: (url, adapter, options, eventBus) ->
+    @url      = url
+    @adapter  = adapter
+    @eventBus = eventBus
 
     @reconnectInterval    = options.reconnectInterval
     @reconnectIntervalMax = options.reconnectIntervalMax
@@ -71,7 +71,7 @@ module.exports = class Socket
     if(@first)
       @first = false
       @sendFirst()
-    @eventCenter.emit('open')
+    @eventBus.emit('open')
 
 
 
@@ -79,18 +79,18 @@ module.exports = class Socket
     @isOpen = false
     if(!@reconnectTimer)
       @reconnect()
-    @eventCenter.emit('close')
+    @eventBus.emit('close')
 
 
 
   handleError: =>
     @isOpen = false
-    @eventCenter.emit('error')
+    @eventBus.emit('error')
 
 
 
   handleMessage: (message) =>
-    @eventCenter.emit('message', message.data)
+    @eventBus.emit('message', message.data)
 
 
 

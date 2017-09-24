@@ -7,7 +7,7 @@
 		exports["Sai"] = factory(require("WebSocket"));
 	else
 		root["Sai"] = factory(root["WebSocket"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_6__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_7__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -77,8 +77,8 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(8);
-var bytesToUuid = __webpack_require__(10);
+var rng = __webpack_require__(9);
+var bytesToUuid = __webpack_require__(11);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -154,7 +154,7 @@ var Client, RPC, RemoteApp;
 
 Client = __webpack_require__(3);
 
-RPC = __webpack_require__(14);
+RPC = __webpack_require__(15);
 
 module.exports = RemoteApp = class RemoteApp {
   /* options */
@@ -222,6 +222,10 @@ module.exports = Client = class Client {
     return this.webSocket.send(packet, callback);
   }
 
+  on(event, callback) {
+    return this.webSocket.on(event, callback);
+  }
+
 };
 
 
@@ -229,20 +233,27 @@ module.exports = Client = class Client {
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var PostOffice, Socket, WebSocket;
+var EventBus, PostOffice, Socket, WebSocket;
 
-Socket = __webpack_require__(5);
+EventBus = __webpack_require__(5);
 
-PostOffice = __webpack_require__(7);
+Socket = __webpack_require__(6);
+
+PostOffice = __webpack_require__(8);
 
 module.exports = WebSocket = class WebSocket {
   constructor(url, adapter, options) {
-    this.socket = new Socket(url, adapter, options);
-    this.postOffice = new PostOffice(this.socket, adapter);
+    this.eventBus = new EventBus();
+    this.socket = new Socket(url, adapter, options, this.eventBus);
+    this.postOffice = new PostOffice(adapter, this.socket, this.eventBus);
   }
 
   send(packet, callback) {
     return this.postOffice.send(packet, callback);
+  }
+
+  on(event, callback) {
+    return this.eventBus.on(event, callback);
   }
 
 };
@@ -250,14 +261,48 @@ module.exports = WebSocket = class WebSocket {
 
 /***/ }),
 /* 5 */
+/***/ (function(module, exports) {
+
+var EventCenter;
+
+module.exports = EventCenter = class EventCenter {
+  constructor() {
+    this.on = this.on.bind(this);
+    this.emit = this.emit.bind(this);
+    this.opens = [];
+    this.closes = [];
+    this.errors = [];
+    this.messages = [];
+  }
+
+  on(event, callback) {
+    return this[event + 's'].push(callback);
+  }
+
+  emit(event, data) {
+    var callback, i, len, ref, results;
+    ref = this[event + 's'];
+    results = [];
+    for (i = 0, len = ref.length; i < len; i++) {
+      callback = ref[i];
+      results.push(callback(data));
+    }
+    return results;
+  }
+
+};
+
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Socket, WebSocket;
 
-WebSocket = __webpack_require__(6);
+WebSocket = __webpack_require__(7);
 
 module.exports = Socket = class Socket {
-  constructor(url, adapter, options) {
+  constructor(url, adapter, options, eventBus) {
     this.connect = this.connect.bind(this);
     this.reconnect = this.reconnect.bind(this);
     /* @private */
@@ -270,10 +315,10 @@ module.exports = Socket = class Socket {
     this.handleMessage = this.handleMessage.bind(this);
     this.sendFirst = this.sendFirst.bind(this);
     this.send = this.send.bind(this);
-    this.on = this.on.bind(this);
     this.addEventListener = this.addEventListener.bind(this);
     this.url = url;
     this.adapter = adapter;
+    this.eventBus = eventBus;
     this.reconnectInterval = options.reconnectInterval;
     this.reconnectIntervalMax = options.reconnectIntervalMax;
     this.reconnectDecay = options.reconnectDecay;
@@ -284,10 +329,6 @@ module.exports = Socket = class Socket {
     this.first = true;
     this.firstMessages = [];
     this.readyMessages = [];
-    this.openCallbacks = [];
-    this.closeCallbacks = [];
-    this.errorCallbacks = [];
-    this.messageCallbacks = [];
     this.connect();
   }
 
@@ -302,10 +343,8 @@ module.exports = Socket = class Socket {
 
   reconnect() {
     var delay;
-    console.log('reconnect');
     this.connect();
     delay = this.computeReconnectDelay();
-    console.log(delay);
     return this.reconnectTimer = setTimeout(this.reconnect, delay);
   }
 
@@ -323,64 +362,32 @@ module.exports = Socket = class Socket {
   }
 
   handleOpen() {
-    var callback, i, len, ref, results;
     clearTimeout(this.reconnectTimer);
     this.reconnectTimer = null;
     this.reconnectCount = 0;
     this.isOpen = true;
-    console.log('open');
     if (this.first) {
       this.first = false;
       this.sendFirst();
     }
-    ref = this.openCallbacks;
-    results = [];
-    for (i = 0, len = ref.length; i < len; i++) {
-      callback = ref[i];
-      results.push(callback());
-    }
-    return results;
+    return this.eventBus.emit('open');
   }
 
   handleClose() {
-    var callback, i, len, ref, results;
     this.isOpen = false;
-    console.log('close');
     if (!this.reconnectTimer) {
       this.reconnect();
     }
-    ref = this.closeCallbacks;
-    results = [];
-    for (i = 0, len = ref.length; i < len; i++) {
-      callback = ref[i];
-      results.push(callback());
-    }
-    return results;
+    return this.eventBus.emit('close');
   }
 
   handleError() {
-    var callback, i, len, ref, results;
     this.isOpen = false;
-    console.log('error');
-    ref = this.errorCallbacks;
-    results = [];
-    for (i = 0, len = ref.length; i < len; i++) {
-      callback = ref[i];
-      results.push(callback());
-    }
-    return results;
+    return this.eventBus.emit('error');
   }
 
   handleMessage(message) {
-    var callback, i, len, ref, results;
-    message = message.data;
-    ref = this.messageCallbacks;
-    results = [];
-    for (i = 0, len = ref.length; i < len; i++) {
-      callback = ref[i];
-      results.push(callback(message));
-    }
-    return results;
+    return this.eventBus.emit('message', message.data);
   }
 
   sendFirst() {
@@ -403,10 +410,6 @@ module.exports = Socket = class Socket {
     }
   }
 
-  on(event, callback) {
-    return this[event + 'Callbacks'].push(callback);
-  }
-
   addEventListener(event, callback) {
     if (this.ws.addEventListener) {
       return this.ws.addEventListener(event, callback);
@@ -419,31 +422,32 @@ module.exports = Socket = class Socket {
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_6__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_7__;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var PostOffice, SaiJSON, uuidv4;
 
 uuidv4 = __webpack_require__(0);
 
-SaiJSON = __webpack_require__(11);
+SaiJSON = __webpack_require__(12);
 
 module.exports = PostOffice = class PostOffice {
-  constructor(socket, adapter) {
+  constructor(adapter, socket, eventBus) {
     this.send = this.send.bind(this);
     this.seal = this.seal.bind(this);
     this.receive = this.receive.bind(this);
     this.unseal = this.unseal.bind(this);
-    this.socket = socket;
     this.saiJSON = new SaiJSON(adapter);
+    this.socket = socket;
+    this.eventBus = eventBus;
     this.dict = {};
-    this.socket.on('message', this.receive);
+    this.eventBus.on('message', this.receive);
   }
 
   send(packet, callback) {
@@ -486,7 +490,7 @@ module.exports = PostOffice = class PostOffice {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -523,10 +527,10 @@ if (!rng) {
 
 module.exports = rng;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 var g;
@@ -553,7 +557,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 /**
@@ -582,12 +586,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var CodeTask, SaiJSON;
 
-CodeTask = __webpack_require__(12);
+CodeTask = __webpack_require__(13);
 
 module.exports = SaiJSON = class SaiJSON {
   constructor(adapter) {
@@ -608,12 +612,12 @@ module.exports = SaiJSON = class SaiJSON {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var CodeTask, isPlainObject;
 
-isPlainObject = __webpack_require__(13);
+isPlainObject = __webpack_require__(14);
 
 module.exports = CodeTask = class CodeTask {
   constructor(adapter, packet, onComplete) {
@@ -732,7 +736,7 @@ module.exports = CodeTask = class CodeTask {
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 /**
@@ -877,14 +881,14 @@ module.exports = isPlainObject;
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var RPC, Task, TaskGroup;
 
-Task = __webpack_require__(15);
+Task = __webpack_require__(16);
 
-TaskGroup = __webpack_require__(16);
+TaskGroup = __webpack_require__(17);
 
 module.exports = RPC = class RPC {
   constructor(client) {
@@ -966,7 +970,7 @@ module.exports = RPC = class RPC {
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Task, uuidv4;
@@ -1041,7 +1045,7 @@ module.exports = Task = class Task {
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 var TaskGroup;

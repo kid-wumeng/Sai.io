@@ -13,6 +13,16 @@
 
     api = new Sai.RemoteApp('ws://127.0.0.1:9000')
 
+    api.on('open', function(){
+      console.log('打开了！')
+    })
+    api.on('close', function(){
+      console.log('关闭了！')
+    })
+    api.on('error', function(){
+      console.log('错误了！')
+    })
+
     document.getElementById('btn').addEventListener('click', (event)=>{
       api.call('shop.findBook', 'kid', 6).done((result)=>{
         console.log(result)
