@@ -14,7 +14,8 @@ require('coffeescript/register')
 
   app = new Sai.App()
 
-  app.io('shop.findBook', function(name){
+  app.io('shop.findBook', async function(name){
+    await helper.sleep(5000)
     return {flag: true}
   })
 

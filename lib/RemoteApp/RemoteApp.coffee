@@ -14,15 +14,17 @@ module.exports = class RemoteApp
   ##
   constructor: (url, options={}) ->
     options = Object.assign({
-      timeout:              10000
+      timeout:              3000
       reconnectInterval:    1000
       reconnectIntervalMax: 30000
       reconnectDecay:       1.5
     }, options)
 
-    @client = new Client(url, RemoteApp.adapter, options)
-    @rpc    = new RPC(@client)
+    @global_dones = []
+    @global_fails = []
 
+    @client = new Client(url, RemoteApp.adapter, options)
+    @rpc    = new RPC(@client, @global_dones, @global_fails)
 
 
   call: (method, params...) ->
@@ -47,6 +49,18 @@ module.exports = class RemoteApp
 
   task: (method, params...) =>
     return @rpc.task(method, params)
+
+
+
+  done: (callback) =>
+    @global_dones.push(callback)
+    return @
+
+
+
+  fail: (callback) =>
+    @global_fails.push(callback)
+    return @
 
 
 

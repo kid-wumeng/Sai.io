@@ -13,6 +13,11 @@
 
     api = new Sai.RemoteApp('ws://127.0.0.1:9000')
 
+    api.fail(function(error){
+      console.log('统一失败')
+      console.log(error.message)
+    })
+
     api.on('open', function(){
       console.log('打开了！')
     })

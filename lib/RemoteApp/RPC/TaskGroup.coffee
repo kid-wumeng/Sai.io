@@ -3,6 +3,7 @@ module.exports = class TaskGroup
   constructor: (tasks) ->
     @tasks = tasks
     @dones = []
+    @fails = []
 
 
 
@@ -22,6 +23,12 @@ module.exports = class TaskGroup
 
   done: (callback) =>
     @dones.push(callback)
+    return @
+
+
+
+  fail: (callback) =>
+    @fails.push(callback)
     return @
 
 
@@ -49,3 +56,11 @@ module.exports = class TaskGroup
       task.complete(packet[i])
 
     done() for done in @dones
+
+
+
+  timeout: =>
+    for task, i in @tasks
+      task.timeout()
+
+    fail() for fail in @fails

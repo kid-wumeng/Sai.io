@@ -165,14 +165,18 @@ module.exports = RemoteApp = class RemoteApp {
   //#
   constructor(url, options = {}) {
     this.task = this.task.bind(this);
+    this.done = this.done.bind(this);
+    this.fail = this.fail.bind(this);
     options = Object.assign({
-      timeout: 10000,
+      timeout: 3000,
       reconnectInterval: 1000,
       reconnectIntervalMax: 30000,
       reconnectDecay: 1.5
     }, options);
+    this.global_dones = [];
+    this.global_fails = [];
     this.client = new Client(url, RemoteApp.adapter, options);
-    this.rpc = new RPC(this.client);
+    this.rpc = new RPC(this.client, this.global_dones, this.global_fails);
   }
 
   call(method, ...params) {
@@ -193,6 +197,16 @@ module.exports = RemoteApp = class RemoteApp {
 
   task(method, ...params) {
     return this.rpc.task(method, params);
+  }
+
+  done(callback) {
+    this.global_dones.push(callback);
+    return this;
+  }
+
+  fail(callback) {
+    this.global_fails.push(callback);
+    return this;
   }
 
   on(event, callback) {
@@ -218,8 +232,8 @@ module.exports = Client = class Client {
     this.webSocket = new WebSocket(url, adapter, options);
   }
 
-  send(packet, callback) {
-    return this.webSocket.send(packet, callback);
+  send(packet, complete, timeout) {
+    return this.webSocket.send(packet, complete, timeout);
   }
 
   on(event, callback) {
@@ -245,11 +259,11 @@ module.exports = WebSocket = class WebSocket {
   constructor(url, adapter, options) {
     this.eventBus = new EventBus();
     this.socket = new Socket(url, adapter, options, this.eventBus);
-    this.postOffice = new PostOffice(adapter, this.socket, this.eventBus);
+    this.postOffice = new PostOffice(adapter, options, this.socket, this.eventBus);
   }
 
-  send(packet, callback) {
-    return this.postOffice.send(packet, callback);
+  send(packet, complete, timeout) {
+    return this.postOffice.send(packet, complete, timeout);
   }
 
   on(event, callback) {
@@ -438,24 +452,34 @@ uuidv4 = __webpack_require__(0);
 SaiJSON = __webpack_require__(12);
 
 module.exports = PostOffice = class PostOffice {
-  constructor(adapter, socket, eventBus) {
+  constructor(adapter, options, socket, eventBus) {
     this.send = this.send.bind(this);
     this.seal = this.seal.bind(this);
     this.receive = this.receive.bind(this);
     this.unseal = this.unseal.bind(this);
+    this.handleTimeout = this.handleTimeout.bind(this);
     this.saiJSON = new SaiJSON(adapter);
     this.socket = socket;
     this.eventBus = eventBus;
+    this.timeout = options.timeout;
     this.dict = {};
     this.eventBus.on('message', this.receive);
   }
 
-  send(packet, callback) {
+  send(packet, complete, timeout) {
+    // 编码数据
     return this.saiJSON.encode(packet, () => {
       var message, stamp;
+      // 封包、盖戳
       ({stamp, message} = this.seal(packet));
-      this.dict[stamp] = callback;
-      return this.socket.send(message);
+      // 记录"完成"与"超时"事件，邮戳是找寻依据
+      this.dict[stamp] = {complete, timeout};
+      // 寄出
+      this.socket.send(message);
+      // 设置计时器，到点触发，用以判断是否超时
+      return setTimeout((() => {
+        return this.handleTimeout(stamp);
+      }), this.timeout);
     });
   }
 
@@ -468,13 +492,19 @@ module.exports = PostOffice = class PostOffice {
   }
 
   receive(message) {
-    var callback, packet, stamp;
+    var complete, packet, stamp;
+    // 启封
     ({stamp, packet} = this.unseal(message));
-    callback = this.dict[stamp];
-    if (callback) {
+    // 根据邮戳找到记录（确认没有因为超时而消除）
+    if (this.dict[stamp]) {
+      // 取出"完成"事件
+      ({complete} = this.dict[stamp]);
+      // 消除记录
       delete this.dict[stamp];
+      // 解码数据
       return this.saiJSON.decode(packet, () => {
-        return callback(packet);
+        // 激活"完成"事件
+        return complete(packet);
       });
     }
   }
@@ -484,6 +514,19 @@ module.exports = PostOffice = class PostOffice {
     message = JSON.parse(message);
     ({stamp, packet} = message);
     return {stamp, packet};
+  }
+
+  handleTimeout(stamp) {
+    var timeout;
+    // 记录存在说明没有被完成，判定为超时
+    if (this.dict[stamp]) {
+      // 取出"超时"事件
+      ({timeout} = this.dict[stamp]);
+      // 消除记录
+      delete this.dict[stamp];
+      // 激活"超时"事件
+      return timeout();
+    }
   }
 
 };
@@ -888,10 +931,10 @@ var RPC, Task, TaskGroup;
 
 Task = __webpack_require__(16);
 
-TaskGroup = __webpack_require__(17);
+TaskGroup = __webpack_require__(18);
 
 module.exports = RPC = class RPC {
-  constructor(client) {
+  constructor(client, global_dones, global_fails) {
     this.call = this.call.bind(this);
     this.callBatch = this.callBatch.bind(this);
     this.callSeq = this.callSeq.bind(this);
@@ -899,11 +942,13 @@ module.exports = RPC = class RPC {
     this.task = this.task.bind(this);
     this.send = this.send.bind(this);
     this.client = client;
+    this.global_dones = global_dones;
+    this.global_fails = global_fails;
   }
 
   call(method, params) {
     var task;
-    task = new Task(method, params);
+    task = new Task(method, params, this.global_dones, this.global_fails);
     this.send(task);
     return task;
   }
@@ -962,7 +1007,11 @@ module.exports = RPC = class RPC {
 
   send(taskOrTaskGroup) {
     return setTimeout(() => {
-      return this.client.send(taskOrTaskGroup.getPacket(), taskOrTaskGroup.complete);
+      var complete, packet, timeout;
+      packet = taskOrTaskGroup.getPacket();
+      complete = taskOrTaskGroup.complete;
+      timeout = taskOrTaskGroup.timeout;
+      return this.client.send(packet, complete, timeout);
     });
   }
 
@@ -973,20 +1022,26 @@ module.exports = RPC = class RPC {
 /* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Task, uuidv4;
+var REQUEST_TIMEOUT, Task, uuidv4;
 
 uuidv4 = __webpack_require__(0);
 
+REQUEST_TIMEOUT = __webpack_require__(17);
+
 module.exports = Task = class Task {
-  constructor(method, params) {
+  constructor(method, params, global_dones, global_fails) {
     this.done = this.done.bind(this);
     this.fail = this.fail.bind(this);
     this.always = this.always.bind(this);
     this.getPacket = this.getPacket.bind(this);
     this.complete = this.complete.bind(this);
+    this.completeByFail = this.completeByFail.bind(this);
+    this.timeout = this.timeout.bind(this);
     this.method = method;
     this.params = params;
     this.id = uuidv4();
+    this.global_dones = global_dones;
+    this.global_fails = global_fails;
     this.dones = [];
     this.fails = [];
     this.result = null;
@@ -1019,9 +1074,16 @@ module.exports = Task = class Task {
   }
 
   complete({result, error}) {
-    var done, fail, i, j, len, len1, ref, ref1, results, results1;
     if (error) {
-      this.error = error;
+      return this.completeByFail(error);
+    } else {
+      return this.completeByDone(result);
+    }
+  }
+
+  completeByFail(error) {
+    var fail, i, j, len, len1, ref, ref1, results, results1;
+    if (this.fails.length) {
       ref = this.fails;
       results = [];
       for (i = 0, len = ref.length; i < len; i++) {
@@ -1030,15 +1092,19 @@ module.exports = Task = class Task {
       }
       return results;
     } else {
-      this.result = result;
-      ref1 = this.dones;
+      ref1 = this.global_fails;
       results1 = [];
       for (j = 0, len1 = ref1.length; j < len1; j++) {
-        done = ref1[j];
-        results1.push(done(result, this));
+        fail = ref1[j];
+        results1.push(fail(error, this));
       }
       return results1;
     }
+  }
+
+  timeout() {
+    this.error = REQUEST_TIMEOUT();
+    return this.completeByFail(this.error, this);
   }
 
 };
@@ -1048,6 +1114,19 @@ module.exports = Task = class Task {
 /* 17 */
 /***/ (function(module, exports) {
 
+module.exports = () => {
+  var error;
+  error = new Error("Sorry, the request timeout.");
+  error.status = 408;
+  error.code = 'REQUEST_TIMEOUT';
+  return error;
+};
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
 var TaskGroup;
 
 module.exports = TaskGroup = class TaskGroup {
@@ -1055,11 +1134,14 @@ module.exports = TaskGroup = class TaskGroup {
     this.doneEach = this.doneEach.bind(this);
     this.failEach = this.failEach.bind(this);
     this.done = this.done.bind(this);
+    this.fail = this.fail.bind(this);
     this.getPacket = this.getPacket.bind(this);
     this.receive = this.receive.bind(this);
     this.complete = this.complete.bind(this);
+    this.timeout = this.timeout.bind(this);
     this.tasks = tasks;
     this.dones = [];
+    this.fails = [];
   }
 
   doneEach(callback) {
@@ -1084,6 +1166,11 @@ module.exports = TaskGroup = class TaskGroup {
 
   done(callback) {
     this.dones.push(callback);
+    return this;
+  }
+
+  fail(callback) {
+    this.fails.push(callback);
     return this;
   }
 
@@ -1119,6 +1206,22 @@ module.exports = TaskGroup = class TaskGroup {
     for (k = 0, len1 = ref1.length; k < len1; k++) {
       done = ref1[k];
       results.push(done());
+    }
+    return results;
+  }
+
+  timeout() {
+    var fail, i, j, k, len, len1, ref, ref1, results, task;
+    ref = this.tasks;
+    for (i = j = 0, len = ref.length; j < len; i = ++j) {
+      task = ref[i];
+      task.timeout();
+    }
+    ref1 = this.fails;
+    results = [];
+    for (k = 0, len1 = ref1.length; k < len1; k++) {
+      fail = ref1[k];
+      results.push(fail());
     }
     return results;
   }

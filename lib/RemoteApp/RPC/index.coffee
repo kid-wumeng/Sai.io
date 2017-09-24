@@ -5,13 +5,15 @@ TaskGroup = require('./TaskGroup')
 
 module.exports = class RPC
 
-  constructor: (client) ->
-    @client = client
+  constructor: (client, global_dones, global_fails) ->
+    @client      = client
+    @global_dones = global_dones
+    @global_fails = global_fails
 
 
 
   call: (method, params) =>
-    task = new Task(method, params)
+    task = new Task(method, params, @global_dones, @global_fails)
     @send(task)
     return task
 
@@ -62,4 +64,7 @@ module.exports = class RPC
 
   send: (taskOrTaskGroup) =>
     setTimeout =>
-      @client.send(taskOrTaskGroup.getPacket(), taskOrTaskGroup.complete)
+      packet   = taskOrTaskGroup.getPacket()
+      complete = taskOrTaskGroup.complete
+      timeout  = taskOrTaskGroup.timeout
+      @client.send(packet, complete, timeout)

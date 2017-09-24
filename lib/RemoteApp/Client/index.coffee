@@ -8,8 +8,8 @@ module.exports = class Client
     @webSocket = new WebSocket(url, adapter, options)
 
 
-  send: (packet, callback) ->
-    @webSocket.send(packet, callback)
+  send: (packet, complete, timeout) ->
+    @webSocket.send(packet, complete, timeout)
 
 
   on: (event, callback) ->

@@ -1,4 +1,6 @@
+exports.BAD_NETWORK      = require('./BAD_NETWORK')
 exports.INVALID_TOKEN    = require('./INVALID_TOKEN')
 exports.IO_NOT_FOUND     = require('./IO_NOT_FOUND')
 exports.METHOD_NOT_FOUND = require('./METHOD_NOT_FOUND')
+exports.REQUEST_TIMEOUT  = require('./REQUEST_TIMEOUT')
 exports.TOPIC_NOT_FOUND  = require('./TOPIC_NOT_FOUND')

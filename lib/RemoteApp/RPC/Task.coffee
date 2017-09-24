@@ -1,14 +1,17 @@
 uuidv4 = require('uuid/v4')
+REQUEST_TIMEOUT = require('../../errors/REQUEST_TIMEOUT')
 
 
 
 module.exports = class Task
 
-  constructor: (method, params) ->
+  constructor: (method, params, global_dones, global_fails) ->
     @method = method
     @params = params
     @id     = uuidv4()
 
+    @global_dones = global_dones
+    @global_fails = global_fails
     @dones  = []
     @fails  = []
 
@@ -47,8 +50,20 @@ module.exports = class Task
 
   complete: ({result, error}) =>
     if error
-      @error = error
+      @completeByFail(error)
+    else
+      @completeByDone(result)
+
+
+
+  completeByFail: (error) =>
+    if @fails.length
       for fail in @fails then fail(error, @)
     else
-      @result = result
-      for done in @dones then done(result, @)
+      for fail in @global_fails then fail(error, @)
+
+
+
+  timeout: =>
+    @error = REQUEST_TIMEOUT()
+    @completeByFail(@error, @)
