@@ -10,8 +10,9 @@ module.exports = class RPC
 
 
 
-  call: (ctx, task) =>
+  call: (ctx, packet) =>
     try
+      {task} = packet
       routes = @getRoutes(task)
       { route, params }  = @match(task, routes)
       @formatNumberParams(params)

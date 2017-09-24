@@ -15,11 +15,12 @@ require('coffeescript/register')
   app = new Sai.App()
 
   app.io('shop.findBook', async function(id, name){
-    console.log(typeof(id));
-    console.log(typeof(name));
+    console.log((id));
+    console.log((name));
     return {flag: true}
   })
 
+  app.method('getBooks', 'shop.findBook')
   app.get('books/:id/:name', 'shop.findBook')
 
   app.topic('timeline', function(a, b){
@@ -41,6 +42,11 @@ require('coffeescript/register')
     console.log('-=-=');
     console.log(a);
     console.log(typeof b);
+  })
+
+
+  api.call('getBooks', 8, 'hj').done(function(result){
+    console.log(result);
   })
 
 

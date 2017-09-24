@@ -71,7 +71,6 @@ PostOffice = require('./PostOffice')
 #     error: {...}
 #
 #
-#
 # subscribe request ===>>
 # 待定
 #

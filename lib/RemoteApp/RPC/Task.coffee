@@ -15,6 +15,13 @@ module.exports = class Task extends Task
 
   getPacket: =>
     return
+      type: 'json-rpc'
+      task: @getTask()
+
+
+
+  getTask: =>
+    return
       jsonrpc: '2.0'
       method: @method
       params: @params

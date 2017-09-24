@@ -34,7 +34,11 @@ module.exports = class TaskGroup
 
 
   getPacket: =>
-    return @tasks.map (task) => task.getPacket()
+    tasks = @tasks.map (task) => task.getTask()
+    return
+      type: 'json-rpc'
+      batch: true
+      tasks: tasks
 
 
 

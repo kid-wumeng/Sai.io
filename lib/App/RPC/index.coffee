@@ -12,12 +12,11 @@ module.exports = class RPC
 
 
   call: (ctx, packet) =>
-    if Array.isArray(packet)
-      promises = packet.map (task) => @callOne(ctx, task)
+    if packet.batch
+      promises = packet.tasks.map (task) => @callOne(ctx, task)
       return Promise.all(promises)
     else
-      task = packet
-      return await @callOne(ctx, task)
+      return await @callOne(ctx, packet.task)
 
 
 
@@ -31,7 +30,7 @@ module.exports = class RPC
       params  = task.params
       result = await method.call(ctx, params)
       return { jsonrpc, result, id }
-      
+
     catch error
       error = _.pick(error, ['code', 'message', 'data'])
       return { jsonrpc, error, id }

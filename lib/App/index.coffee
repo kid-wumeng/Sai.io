@@ -120,12 +120,11 @@ module.exports = class App
   callback: (packet) =>
     try
       if packet.type is 'json-rpc'
-        packet = packet.packet
         return await @rpc.call({}, packet)
       else
-        return await @rest.call({}, packet.task)
+        return await @rest.call({}, packet)
     catch error
-      console.log 111
+      console.log error
 
 
 

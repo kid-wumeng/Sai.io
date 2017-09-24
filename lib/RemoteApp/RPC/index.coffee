@@ -63,9 +63,7 @@ module.exports = class RPC
 
   send: (taskOrTaskGroup) =>
     setTimeout =>
-      packet = taskOrTaskGroup.getPacket()
-      packet = {type: 'json-rpc', packet}
-
+      packet   = taskOrTaskGroup.getPacket()
       complete = taskOrTaskGroup.complete
       timeout  = taskOrTaskGroup.timeout
 

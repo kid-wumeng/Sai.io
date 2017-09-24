@@ -23,7 +23,6 @@ module.exports = class WebSocket
 
   onMessage: (socket, packet) ->
     packet = JSON.parse(packet)
-    callbackByRPC()
 
 
 
