@@ -14,17 +14,25 @@ require('coffeescript/register')
 
   app = new Sai.App()
 
-  app.io('shop.findBook', async function(name){
-    await helper.sleep(5000)
+  app.io('shop.findBook', async function(id, name){
+    console.log(typeof(id));
+    console.log(typeof(name));
     return {flag: true}
   })
 
-  app.method('shop.findBook')
+  app.get('books/:id/:name', 'shop.findBook')
 
   app.listen(9000)
 
 
   api = new Sai.RemoteApp('ws://127.0.0.1:9000')
+
+  api.fail((error)=>{
+    console.log(error.message);
+  })
+
+
+  api.get('bookss/6/3rd').done(result => console.log(result))
 
   // done = function(result){
   //   console.log(result.flag.toString());

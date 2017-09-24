@@ -1,5 +1,6 @@
 Client = require('./Client')
 RPC    = require('./RPC')
+REST   = require('./REST')
 
 
 
@@ -25,6 +26,7 @@ module.exports = class RemoteApp
 
     @client = new Client(url, RemoteApp.adapter, options)
     @rpc    = new RPC(@client, @global_dones, @global_fails)
+    @rest   = new REST(@client, @global_dones, @global_fails)
 
 
   call: (method, params...) ->
@@ -44,6 +46,11 @@ module.exports = class RemoteApp
 
   callParal: (tasks) ->
     return @rpc.callParal(tasks)
+
+
+
+  get: (path) ->
+    return @rest.get(path)
 
 
 

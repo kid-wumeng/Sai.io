@@ -1035,6 +1035,7 @@ module.exports = Task = class Task {
     this.always = this.always.bind(this);
     this.getPacket = this.getPacket.bind(this);
     this.complete = this.complete.bind(this);
+    this.completeByDone = this.completeByDone.bind(this);
     this.completeByFail = this.completeByFail.bind(this);
     this.timeout = this.timeout.bind(this);
     this.method = method;
@@ -1078,6 +1079,27 @@ module.exports = Task = class Task {
       return this.completeByFail(error);
     } else {
       return this.completeByDone(result);
+    }
+  }
+
+  completeByDone(result) {
+    var done, i, j, len, len1, ref, ref1, results, results1;
+    if (this.dones.length) {
+      ref = this.dones;
+      results = [];
+      for (i = 0, len = ref.length; i < len; i++) {
+        done = ref[i];
+        results.push(done(result, this));
+      }
+      return results;
+    } else {
+      ref1 = this.global_dones;
+      results1 = [];
+      for (j = 0, len1 = ref1.length; j < len1; j++) {
+        done = ref1[j];
+        results1.push(done(result, this));
+      }
+      return results1;
     }
   }
 

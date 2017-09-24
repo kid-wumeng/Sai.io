@@ -5,20 +5,21 @@ Task   = require('../Task')
 
 module.exports = class Task extends Task
 
-  constructor: (method, params, global_dones, global_fails) ->
+  constructor: ({ method, path, data, global_dones, global_fails }) ->
     super(
       global_dones,
       global_fails
     )
     @method = method
-    @params = params
-    @id     = uuidv4()
+    @path   = path
+    @data   = data
 
 
 
   getPacket: =>
     return
-      jsonrpc: '2.0'
-      method: @method
-      params: @params
-      id:     @id
+      type: 'rest'
+      task:
+        method: @method
+        path:   @path
+        data:   @data

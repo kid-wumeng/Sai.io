@@ -3,9 +3,10 @@ config   = require('../config')
 helper   = require('../helper')
 errors   = require('../errors')
 Context  = require('./Context')
-Store     = require('./Store')
-Server = require('./Server')
-RPC = require('./RPC')
+Store    = require('./Store')
+Server   = require('./Server')
+RPC      = require('./RPC')
+REST     = require('./REST')
 Document = require('./Document')
 
 
@@ -52,6 +53,7 @@ module.exports = class App
     @doc    = new Document(@store)
     @server = new Server(@callback, @doc)
     @rpc    = new RPC(@store)
+    @rest   = new REST(@store)
 
 
   io: (args...) =>
@@ -60,6 +62,10 @@ module.exports = class App
 
   method: (args...) =>
     @store.method(args...)
+
+
+  get: (args...) =>
+    @store.get(args...)
 
 
   topic: (args...) =>
@@ -111,7 +117,11 @@ module.exports = class App
 
   callback: (packet) =>
     try
-      return @rpc.call({}, packet)
+      if packet.type is 'json-rpc'
+        packet = packet.packet
+        return await @rpc.call({}, packet)
+      else
+        return await @rest.call({}, packet.task)
     catch error
       console.log 111
 

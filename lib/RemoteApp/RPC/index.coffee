@@ -6,7 +6,7 @@ TaskGroup = require('./TaskGroup')
 module.exports = class RPC
 
   constructor: (client, global_dones, global_fails) ->
-    @client      = client
+    @client       = client
     @global_dones = global_dones
     @global_fails = global_fails
 
@@ -64,7 +64,10 @@ module.exports = class RPC
 
   send: (taskOrTaskGroup) =>
     setTimeout =>
-      packet   = taskOrTaskGroup.getPacket()
+      packet = taskOrTaskGroup.getPacket()
+      packet = {type: 'json-rpc', packet}
+
       complete = taskOrTaskGroup.complete
       timeout  = taskOrTaskGroup.timeout
+
       @client.send(packet, complete, timeout)
