@@ -5,18 +5,23 @@ WebSocket = require('ws')
 module.exports = class Socket
 
 
-  constructor: (url) ->
-    @url    = url
+  constructor: (url, adapter, options, eventCenter) ->
+    @url         = url
+    @adapter     = adapter
+    @eventCenter = eventCenter
+
+    @reconnectInterval    = options.reconnectInterval
+    @reconnectIntervalMax = options.reconnectIntervalMax
+    @reconnectDecay       = options.reconnectDecay
+    @reconnectCount       = 0
+    @reconnectTimer       = null
+
     @ws     = null
     @isOpen = false
 
     @first         = true
     @firstMessages = []
-
-    @openCallbacks    = []
-    @closeCallbacks   = []
-    @errorCallbacks   = []
-    @messageCallbacks = []
+    @readyMessages = []
 
     @connect()
 
@@ -32,30 +37,60 @@ module.exports = class Socket
 
 
 
+  reconnect: =>
+    @connect()
+    delay = @computeReconnectDelay()
+    @reconnectTimer = setTimeout(@reconnect, delay)
+
+
+  ### @private ###
+  # 计算某次重连的延时
+  ##
+  computeReconnectDelay: =>
+    interval    = @reconnectInterval
+    intervalMax = @reconnectIntervalMax
+    decay       = @reconnectDecay
+    count       = @reconnectCount++
+
+    delay = interval * Math.pow(decay, count)
+
+    if delay > intervalMax
+       delay = intervalMax
+
+    return delay
+
+
+
+
   handleOpen: =>
+    clearTimeout(@reconnectTimer)
+    @reconnectTimer = null
+    @reconnectCount = 0
     @isOpen = true
+
     if(@first)
       @first = false
       @sendFirst()
-    callback() for callback in @openCallbacks
+    @eventCenter.emit('open')
 
 
 
   handleClose: =>
     @isOpen = false
-    callback() for callback in @closeCallbacks
+    if(!@reconnectTimer)
+      @reconnect()
+    @eventCenter.emit('close')
 
 
 
   handleError: =>
     @isOpen = false
-    callback() for callback in @errorCallbacks
+    @eventCenter.emit('error')
 
 
 
   handleMessage: (message) =>
-    message = message.data
-    callback(message) for callback in @messageCallbacks
+    @eventCenter.emit('message', message.data)
 
 
 
@@ -72,12 +107,7 @@ module.exports = class Socket
     else if @isOpen
       @ws.send(message)
     else
-      throw 'hgf'
-
-
-
-  on: (event, callback) =>
-    @[event+'Callbacks'].push(callback)
+      @readyMessages.push(message)
 
 
 

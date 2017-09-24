@@ -6,17 +6,16 @@
 </head>
 <body>
 
-  <input type="file" id="input"/>
-  <img id="img"/>
+  <h1 id="btn">点击发送</h1>
 
   <script type="text/javascript" src="./dist/remote-app.js"></script>
   <script type="text/javascript">
 
-    document.getElementById('input').addEventListener('change', (event)=>{
-      file = event.target.files[0]
-      api  = new Sai.RemoteApp('ws://localhost:9000')
-      api.call('shop.findBook', 'kid-web', file).done((result)=>{
-        document.getElementById('img').src = 'data:image;base64,' + result.flag
+    api = new Sai.RemoteApp('ws://127.0.0.1:9000')
+
+    document.getElementById('btn').addEventListener('click', (event)=>{
+      api.call('shop.findBook', 'kid', 6).done((result)=>{
+        console.log(result)
       })
     })
 

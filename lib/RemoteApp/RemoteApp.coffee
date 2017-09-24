@@ -6,8 +6,21 @@ RPC    = require('./RPC')
 module.exports = class RemoteApp
 
 
+  ### options ###
+  # {number} timeout              - http 与 web-socket 请求超时时间，单位毫秒
+  # {number} reconnectInterval    - web-socket 初始重连间隔，单位毫秒
+  # {number} reconnectIntervalMax - web-socket 最大重连间隔，单位毫秒，即衰退极限
+  # {number} reconnectDecay       - web-socket 重连衰退常数
+  ##
   constructor: (url, options={}) ->
-    @client = new Client(url, RemoteApp.adapter)
+    options = Object.assign({
+      timeout:              10000
+      reconnectInterval:    1000
+      reconnectIntervalMax: 30000
+      reconnectDecay:       1.5
+    }, options)
+
+    @client = new Client(url, RemoteApp.adapter, options)
     @rpc    = new RPC(@client)
 
 

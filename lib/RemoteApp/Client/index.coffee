@@ -4,8 +4,8 @@ WebSocket = require('./WebSocket')
 
 module.exports = class Client
 
-  constructor: (url, adapter) ->
-    @webSocket = new WebSocket(url, adapter)
+  constructor: (url, adapter, options) ->
+    @webSocket = new WebSocket(url, adapter, options)
 
 
   send: (packet, callback) ->

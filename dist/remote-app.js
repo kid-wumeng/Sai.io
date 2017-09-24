@@ -157,9 +157,21 @@ Client = __webpack_require__(3);
 RPC = __webpack_require__(14);
 
 module.exports = RemoteApp = class RemoteApp {
+  /* options */
+  // {number} timeout              - http 与 web-socket 请求超时时间，单位毫秒
+  // {number} reconnectInterval    - web-socket 初始重连间隔，单位毫秒
+  // {number} reconnectIntervalMax - web-socket 最大重连间隔，单位毫秒，即衰退极限
+  // {number} reconnectDecay       - web-socket 重连衰退常数
+  //#
   constructor(url, options = {}) {
     this.task = this.task.bind(this);
-    this.client = new Client(url, RemoteApp.adapter);
+    options = Object.assign({
+      timeout: 10000,
+      reconnectInterval: 1000,
+      reconnectIntervalMax: 30000,
+      reconnectDecay: 1.5
+    }, options);
+    this.client = new Client(url, RemoteApp.adapter, options);
     this.rpc = new RPC(this.client);
   }
 
@@ -202,8 +214,8 @@ var Client, WebSocket;
 WebSocket = __webpack_require__(4);
 
 module.exports = Client = class Client {
-  constructor(url, adapter) {
-    this.webSocket = new WebSocket(url, adapter);
+  constructor(url, adapter, options) {
+    this.webSocket = new WebSocket(url, adapter, options);
   }
 
   send(packet, callback) {
@@ -224,8 +236,8 @@ Socket = __webpack_require__(5);
 PostOffice = __webpack_require__(7);
 
 module.exports = WebSocket = class WebSocket {
-  constructor(url, adapter) {
-    this.socket = new Socket(url, adapter);
+  constructor(url, adapter, options) {
+    this.socket = new Socket(url, adapter, options);
     this.postOffice = new PostOffice(this.socket, adapter);
   }
 
@@ -245,8 +257,13 @@ var Socket, WebSocket;
 WebSocket = __webpack_require__(6);
 
 module.exports = Socket = class Socket {
-  constructor(url) {
+  constructor(url, adapter, options) {
     this.connect = this.connect.bind(this);
+    this.reconnect = this.reconnect.bind(this);
+    /* @private */
+    // 计算某次重连的延时
+    //#
+    this.computeReconnectDelay = this.computeReconnectDelay.bind(this);
     this.handleOpen = this.handleOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleError = this.handleError.bind(this);
@@ -256,10 +273,17 @@ module.exports = Socket = class Socket {
     this.on = this.on.bind(this);
     this.addEventListener = this.addEventListener.bind(this);
     this.url = url;
+    this.adapter = adapter;
+    this.reconnectInterval = options.reconnectInterval;
+    this.reconnectIntervalMax = options.reconnectIntervalMax;
+    this.reconnectDecay = options.reconnectDecay;
+    this.reconnectCount = 0;
+    this.reconnectTimer = null;
     this.ws = null;
     this.isOpen = false;
     this.first = true;
     this.firstMessages = [];
+    this.readyMessages = [];
     this.openCallbacks = [];
     this.closeCallbacks = [];
     this.errorCallbacks = [];
@@ -276,9 +300,35 @@ module.exports = Socket = class Socket {
     return this.addEventListener('message', this.handleMessage);
   }
 
+  reconnect() {
+    var delay;
+    console.log('reconnect');
+    this.connect();
+    delay = this.computeReconnectDelay();
+    console.log(delay);
+    return this.reconnectTimer = setTimeout(this.reconnect, delay);
+  }
+
+  computeReconnectDelay() {
+    var count, decay, delay, interval, intervalMax;
+    interval = this.reconnectInterval;
+    intervalMax = this.reconnectIntervalMax;
+    decay = this.reconnectDecay;
+    count = this.reconnectCount++;
+    delay = interval * Math.pow(decay, count);
+    if (delay > intervalMax) {
+      delay = intervalMax;
+    }
+    return delay;
+  }
+
   handleOpen() {
     var callback, i, len, ref, results;
+    clearTimeout(this.reconnectTimer);
+    this.reconnectTimer = null;
+    this.reconnectCount = 0;
     this.isOpen = true;
+    console.log('open');
     if (this.first) {
       this.first = false;
       this.sendFirst();
@@ -295,6 +345,10 @@ module.exports = Socket = class Socket {
   handleClose() {
     var callback, i, len, ref, results;
     this.isOpen = false;
+    console.log('close');
+    if (!this.reconnectTimer) {
+      this.reconnect();
+    }
     ref = this.closeCallbacks;
     results = [];
     for (i = 0, len = ref.length; i < len; i++) {
@@ -307,6 +361,7 @@ module.exports = Socket = class Socket {
   handleError() {
     var callback, i, len, ref, results;
     this.isOpen = false;
+    console.log('error');
     ref = this.errorCallbacks;
     results = [];
     for (i = 0, len = ref.length; i < len; i++) {
@@ -344,7 +399,7 @@ module.exports = Socket = class Socket {
     } else if (this.isOpen) {
       return this.ws.send(message);
     } else {
-      throw 'hgf';
+      return this.readyMessages.push(message);
     }
   }
 
