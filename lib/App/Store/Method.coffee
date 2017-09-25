@@ -11,4 +11,5 @@ module.exports = class Method
   # 调用io
   ##
   call: (ctx, params) =>
+    ctx.method = @name
     return @io.call(ctx, params)

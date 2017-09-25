@@ -50,13 +50,13 @@ require('coffeescript/register')
   // })
 
 
-  api.call('getBooks', 8, new Date())
-    .done(function(result){
-      console.log(result);
-    })
-    .fail(function(error){
-      console.log(error);
-    })
+  // api.call('getBooks', 8, new Date())
+  //   .done(function(result){
+  //     console.log(result);
+  //   })
+  //   .fail(function(error){
+  //     console.log(error);
+  //   })
 
 
   // api.fail((error)=>{
@@ -64,7 +64,7 @@ require('coffeescript/register')
   // })
 
 
-  // api.get('books/6/3rd').done(result => console.log(result)).fail(error => console.log(error))
+  api.get('books/6/3rd').done(result => console.log(result)).fail(error => console.log(error))
 
   // done = function(result){
   //   console.log(result.flag.toString());

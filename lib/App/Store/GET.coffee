@@ -20,4 +20,6 @@ module.exports = class Method
   # 调用get
   ##
   call: (ctx, params) =>
+    ctx.method = @method
+    ctx.path   = @path
     return @io.call(ctx, params)
