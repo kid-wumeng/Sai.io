@@ -13,6 +13,12 @@ require('coffeescript/register')
 
   app = new Sai.App()
 
+  app.use(async function(){
+    await helper.sleep(5000)
+    console.log(this.ioStack);
+    console.log('-=-=-=');
+  })
+
   app.io('abc', async function(id, name){
     return 'lll'
   })

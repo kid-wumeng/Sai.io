@@ -1,13 +1,14 @@
-_        = require('lodash')
-helper   = require('../helper')
-errors   = require('../errors')
-Store    = require('./Store')
-Context  = require('./Context')
-RPC      = require('./RPC')
-REST     = require('./REST')
-Server   = require('./Server')
-Realtime = require('./Realtime')
-Document = require('./Document')
+_               = require('lodash')
+helper          = require('../helper')
+errors          = require('../errors')
+Store           = require('./Store')
+Context         = require('./Context')
+RPC             = require('./RPC')
+REST            = require('./REST')
+MiddlewareQueue = require('./MiddlewareQueue')
+Server          = require('./Server')
+Realtime        = require('./Realtime')
+Document        = require('./Document')
 
 
 
@@ -50,11 +51,12 @@ module.exports = class App
 
   constructor: (options={}) ->
     @store    = new Store()
-    @context  = new Context(@store)
-    @doc      = new Document(@store)
     @rpc      = new RPC(@store)
     @rest     = new REST(@store)
-    @server   = new Server(@rpc, @rest, @context, @doc)
+    @context  = new Context(@store)
+    @midQueue = new MiddlewareQueue(@store)
+    @doc      = new Document(@store)
+    @server   = new Server(@rpc, @rest, @context, @midQueue, @doc)
     @realtime = new Realtime(@store, @server)
 
 
@@ -77,6 +79,10 @@ module.exports = class App
 
   mount: (args...) =>
     @store.mount(args...)
+
+
+  use: (args...) =>
+    @store.use(args...)
 
 
 

@@ -6,10 +6,11 @@ WebSocket = require('./WebSocket')
 module.exports = class Server
 
 
-  constructor: (rpc, rest, context, doc) ->
+  constructor: (rpc, rest, context, midQueue, doc) ->
     @rpc       = rpc
     @rest      = rest
     @context   = context
+    @midQueue  = midQueue
     @doc       = doc
     @webSocket = new WebSocket()
 
@@ -25,7 +26,8 @@ module.exports = class Server
 
 
   webSocketCallback: ({socket, message}) =>
-    ctx    = @context.create({socket})
+    ctx = @context.create({socket})
+    await @midQueue.dispatch(ctx)
     packet = message.packet
     packet = await @call(ctx, packet)
     message.packet = packet

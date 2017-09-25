@@ -1,9 +1,10 @@
-helper = require('../../helper')
-errors = require('../../errors')
-IO     = require('./IO')
-Method = require('./Method')
-GET    = require('./GET')
-Topic  = require('./Topic')
+helper     = require('../../helper')
+errors     = require('../../errors')
+IO         = require('./IO')
+Method     = require('./Method')
+GET        = require('./GET')
+Topic      = require('./Topic')
+Middleware = require('./Middleware')
 
 
 
@@ -20,6 +21,7 @@ module.exports = class Store
     @gets    = []
     @topics  = {}
     @mounts  = {}
+    @mids    = []
 
 
 
@@ -91,3 +93,12 @@ module.exports = class Store
   ##
   mount: (key, value) =>
     @mounts[key] = value
+
+
+
+  ### @Public ###
+  # 中间件
+  ##
+  use: (func) =>
+    mid = new Middleware(func)
+    @mids.push(mid)
