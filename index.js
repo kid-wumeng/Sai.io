@@ -13,7 +13,13 @@ require('coffeescript/register')
 
   app = new Sai.App()
 
+  app.io('abc', async function(id, name){
+    return 'lll'
+  })
+
   app.io('shop.findBook', async function(id, name){
+    res = await this.call('abc')
+    throw 'errrr'
     return {flag: new Date()}
   })
 
@@ -24,27 +30,33 @@ require('coffeescript/register')
     return true
   })
 
+  app.mount('token', 'uuuser')
+
 
   app.listen(9000)
 
 
-  setTimeout(function(){
-    app.publish('timeline', 'kid', 18)
-  }, 1000)
+  // setTimeout(function(){
+  //   app.publish('timeline', 'kid', 18)
+  // }, 1000)
 
 
   api = new Sai.RemoteApp('ws://127.0.0.1:9000')
 
-  api.subscribe('timeline', function(a, b){
-    console.log('-=-=');
-    console.log(a);
-    console.log(typeof b);
-  })
-
-
-  // api.call('getBooks', 8, new Date()).done(function(result){
-  //   console.log(result);
+  // api.subscribe('timeline', function(a, b){
+  //   console.log('-=-=');
+  //   console.log(a);
+  //   console.log(typeof b);
   // })
+
+
+  api.call('getBooks', 8, new Date())
+    .done(function(result){
+      console.log(result);
+    })
+    .fail(function(error){
+      console.log(error);
+    })
 
 
   // api.fail((error)=>{
@@ -52,7 +64,7 @@ require('coffeescript/register')
   // })
 
 
-  api.get('books/6/3rd').done(result => console.log(result)).fail(error => console.log(error))
+  // api.get('books/6/3rd').done(result => console.log(result)).fail(error => console.log(error))
 
   // done = function(result){
   //   console.log(result.flag.toString());

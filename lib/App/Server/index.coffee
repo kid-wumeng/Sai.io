@@ -6,9 +6,10 @@ WebSocket = require('./WebSocket')
 module.exports = class Server
 
 
-  constructor: (rpc, rest, doc) ->
+  constructor: (rpc, rest, context, doc) ->
     @rpc       = rpc
     @rest      = rest
+    @context   = context
     @doc       = doc
     @webSocket = new WebSocket()
 
@@ -24,16 +25,19 @@ module.exports = class Server
 
 
   webSocketCallback: ({socket, message}) =>
-    message.packet = await @call(message.packet)
+    ctx    = @context.create({socket})
+    packet = message.packet
+    packet = await @call(ctx, packet)
+    message.packet = packet
     @webSocket.send(socket, message)
 
 
 
-  call: (packet) =>
+  call: (ctx, packet) =>
     if packet.type is 'json-rpc'
-      return await @rpc.call({}, packet)
+      return await @rpc.call(ctx, packet)
     else
-      return await @rest.call({}, packet)
+      return await @rest.call(ctx, packet)
 
 
 

@@ -9,4 +9,8 @@ module.exports = class IO
   # 调用io
   ##
   call: (ctx, params) =>
-    return @func.call(ctx, params...)
+    ctx.ioChain.push(@name)
+    ctx.ioStack.push(@name)
+    result = await @func.call(ctx, params...)
+    ctx.ioStack.pop()
+    return result

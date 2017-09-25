@@ -54,7 +54,7 @@ module.exports = class App
     @doc      = new Document(@store)
     @rpc      = new RPC(@store)
     @rest     = new REST(@store)
-    @server   = new Server(@rpc, @rest, @doc)
+    @server   = new Server(@rpc, @rest, @context, @doc)
     @realtime = new Realtime(@store, @server)
 
 
@@ -84,12 +84,13 @@ module.exports = class App
   # 本地调用io
   ##
   call: (name, params...) =>
-    io = @ios[name]
+    io = @store.ios[name]
     if io
-      ctx = @formatContext({})
+      ctx = @context.create()
       return io.call(ctx, params)
     else
       throw errors.IO_NOT_FOUND(name)
+
 
 
   ### @Public ###
@@ -97,15 +98,6 @@ module.exports = class App
   ##
   publish: (topic, params...) =>
     @realtime.publish(topic, params)
-
-
-
-  ### @Private ###
-  formatContext: (ctx) =>
-    return Context.format(ctx, {
-      ios: @ios
-      mount: @mount
-    })
 
 
 

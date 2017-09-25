@@ -10,5 +10,5 @@ exports.error = (ctx, error) =>
 
   error.ioChain = ctx.ioChain
   error.ioStack = ctx.ioStack
-  
+
   return error

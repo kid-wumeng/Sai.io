@@ -53,8 +53,8 @@ module.exports = class RPC
       return { jsonrpc, result, id }
 
     catch error
-      globalEventBus.emit('error', error)
       error = assets.error(ctx, error)
+      globalEventBus.emit('error', error)
       return { jsonrpc, error, id }
 
 

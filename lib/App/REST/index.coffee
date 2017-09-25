@@ -38,8 +38,8 @@ module.exports = class RPC
       return { result }
 
     catch error
-      globalEventBus.emit('error', error)
       error = assets.error(ctx, error)
+      globalEventBus.emit('error', error)
       return { error }
 
 
