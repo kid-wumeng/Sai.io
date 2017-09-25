@@ -1,3 +1,7 @@
+### SaiJSON 适配器 for NodeJS ###
+
+
+
 exports.isFile = (value) ->
   return value instanceof Buffer
 

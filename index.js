@@ -6,18 +6,15 @@ require('coffeescript/register')
   var Sai = require('./lib')
   var helper = require('./lib/helper')
 
-  Sai.config.language = 'zh'
-  Sai.config.onCatch = (error) => {
+  Sai.catch((error)=>{
     console.log(error.message.red);
     console.log(error.stack);
-  }
+  })
 
   app = new Sai.App()
 
   app.io('shop.findBook', async function(id, name){
-    console.log((id));
-    console.log((name));
-    return {flag: true}
+    return {flag: new Date()}
   })
 
   app.method('getBooks', 'shop.findBook')
@@ -45,9 +42,9 @@ require('coffeescript/register')
   })
 
 
-  api.call('getBooks', 8, 'hj').done(function(result){
-    console.log(result);
-  })
+  // api.call('getBooks', 8, new Date()).done(function(result){
+  //   console.log(result);
+  // })
 
 
   // api.fail((error)=>{
@@ -55,7 +52,7 @@ require('coffeescript/register')
   // })
 
 
-  // api.get('bookss/6/3rd').done(result => console.log(result))
+  api.get('books/6/3rd').done(result => console.log(result)).fail(error => console.log(error))
 
   // done = function(result){
   //   console.log(result.flag.toString());

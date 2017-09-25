@@ -1,12 +1,11 @@
 _        = require('lodash')
-config   = require('../config')
 helper   = require('../helper')
 errors   = require('../errors')
-Context  = require('./Context')
 Store    = require('./Store')
-Server   = require('./Server')
+Context  = require('./Context')
 RPC      = require('./RPC')
 REST     = require('./REST')
+Server   = require('./Server')
 Realtime = require('./Realtime')
 Document = require('./Document')
 
@@ -51,11 +50,13 @@ module.exports = class App
 
   constructor: (options={}) ->
     @store    = new Store()
+    @context  = new Context(@store)
     @doc      = new Document(@store)
-    @server   = new Server(@callback, @doc)
     @rpc      = new RPC(@store)
     @rest     = new REST(@store)
+    @server   = new Server(@rpc, @rest, @doc)
     @realtime = new Realtime(@store, @server)
+
 
 
   io: (args...) =>
@@ -111,45 +112,6 @@ module.exports = class App
   ### @Public ###
   # 开始监听端口
   ##
-  listen: (port) =>
+  listen: (port=80) =>
     @server.listen(port)
     console.log "sai-io app:#{port} start ~ !".green
-
-
-
-  callback: (packet) =>
-    try
-      if packet.type is 'json-rpc'
-        return await @rpc.call({}, packet)
-      else
-        return await @rest.call({}, packet)
-    catch error
-      console.log error
-
-
-
-  catch: (ctx, error={}) =>
-    # 可能开发者会直接使用 throw 'some messages...'
-    # 则需要包装成error对象
-    if _.isString(error)
-      error = message: error
-
-    # 表明此异常由http请求触发
-    error.byHTTPRequest = true
-    error.method        = ctx.requestBody.method
-    error.ioChain       = ctx.ioChain
-    error.ioStack       = ctx.ioStack
-
-    # 本地全局捕获
-    config.onCatch(error)
-
-    # 响应：只返回必要的错误信息
-    ctx.status = error.status ? 400
-    ctx.responseBody.error = _.pick(error, [
-      'code'
-      'message'
-      'data'
-      'serviceName'
-      'ioChain'
-      'ioStack'
-    ])

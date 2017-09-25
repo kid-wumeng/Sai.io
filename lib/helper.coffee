@@ -1,5 +1,4 @@
-_      = require('lodash')
-config = require('./config')
+_ = require('lodash')
 
 
 

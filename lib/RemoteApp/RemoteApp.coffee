@@ -17,7 +17,7 @@ module.exports = class RemoteApp
   ##
   constructor: (url, options={}) ->
     options = Object.assign({
-      timeout:              3000
+      timeout:              30000
       reconnectInterval:    1000
       reconnectIntervalMax: 30000
       reconnectDecay:       1.5

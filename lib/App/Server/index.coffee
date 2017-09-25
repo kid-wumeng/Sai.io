@@ -1,31 +1,44 @@
 http      = require('http')
-WebSocket = require('ws')
-SaiJSON   = require('../../assets/SaiJSON')
-adapter   = require('../../assets/SaiJSONAdapter')
+WebSocket = require('./WebSocket')
 
 
 
 module.exports = class Server
 
 
-  constructor: (callback, doc) ->
-    @wss      = null
-    @saiJSON  = new SaiJSON(adapter)
-    @callback = callback
-    @doc      = doc
+  constructor: (rpc, rest, doc) ->
+    @rpc       = rpc
+    @rest      = rest
+    @doc       = doc
+    @webSocket = new WebSocket()
 
 
 
-  listen: (port=80) =>
+  listen: (port) =>
     server = http.createServer(@docs)
-    @wss = new WebSocket.Server({server})
-    @wss.on('connection', @connect)
+    server = @webSocket.create(server)
+
+    @webSocket.on('message', @webSocketCallback)
     server.listen(port)
 
 
 
+  webSocketCallback: ({socket, message}) =>
+    message.packet = await @call(message.packet)
+    @webSocket.send(socket, message)
+
+
+
+  call: (packet) =>
+    if packet.type is 'json-rpc'
+      return await @rpc.call({}, packet)
+    else
+      return await @rest.call({}, packet)
+
+
+
   getSockets: =>
-    return @wss.clients
+    return @webSocket.getSockets()
 
 
 
@@ -37,23 +50,3 @@ module.exports = class Server
     else
       res.writeHead(204)
       res.end()
-
-
-
-  connect: (socket) =>
-    socket.on('message', @handleCall.bind(@, socket))
-
-
-
-  handleCall: (socket, message) =>
-    # 收信
-    message = JSON.parse(message)
-    packet  = message.packet
-    @saiJSON.decode packet, =>
-      # 执行
-      packet = await @callback(packet)
-      # 回信
-      @saiJSON.encode packet, =>
-        message.packet = packet
-        message = JSON.stringify(message)
-        socket.send(message)

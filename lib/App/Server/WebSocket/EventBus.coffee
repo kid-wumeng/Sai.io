@@ -1,4 +1,4 @@
-module.exports = class EventBus
+module.exports = class EventCenter
 
   constructor: ->
     @opens    = []

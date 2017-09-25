@@ -8,10 +8,10 @@ module.exports = class SaiJSON
 
 
 
-  encode: (packet, onComplete) =>
+  encode: (packet, onComplete=->) =>
     new CodeTask(@adapter, packet, onComplete).encode()
 
 
 
-  decode: (packet, onComplete) =>
+  decode: (packet, onComplete=->) =>
     new CodeTask(@adapter, packet, onComplete).decode()
