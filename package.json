@@ -1,7 +1,9 @@
 {
-  "name": "sai-io",
+  "name": "Sai.io",
   "version": "0.1.0",
+  "main": "./src/index.js",
   "scripts": {
+    "build-libs": "./node_modules/.bin/webpack",
     "build-docs": "./node_modules/.bin/gitbook build lib/docs docs",
     "serve-docs": "./node_modules/.bin/gitbook serve lib/docs docs"
   },

@@ -1,11 +1,11 @@
 const path = require('path');
 
 module.exports = {
-  entry: './lib/RemoteApp/index.w3c',
+  entry: './src/RemoteApp/index.w3c',
 
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'remote-app.js',
+    path: path.resolve(__dirname, 'lib'),
+    filename: 'w3c.js',
     library: 'Sai',
     libraryTarget: 'umd'
   },
@@ -13,9 +13,6 @@ module.exports = {
   module: {
     rules: [{
       test: /\.coffee$/,
-      exclude: [
-        path.resolve(__dirname, "app/demo-files")
-      ],
       loader: 'coffee-loader'
     }]
   },
