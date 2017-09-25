@@ -1,5 +1,6 @@
-http      = require('http')
-WebSocket = require('./WebSocket')
+http       = require('http')
+Middleware = require('../Store/Middleware')
+WebSocket  = require('./WebSocket')
 
 
 
@@ -20,18 +21,35 @@ module.exports = class Server
     server = http.createServer(@docs)
     server = @webSocket.create(server)
 
+    @midQueue.insert(new Middleware(@midStart))
+    @midQueue.append(new Middleware(@midEnd))
+
     @webSocket.on('message', @webSocketCallback)
     server.listen(port)
 
 
 
   webSocketCallback: ({socket, message}) =>
-    ctx = @context.create({socket})
+    ctx = @context.create({
+      socket:      socket
+      __message:   message
+      __call:      @call
+      __webSocket: @webSocket
+    })
     await @midQueue.dispatch(ctx)
-    packet = message.packet
-    packet = await @call(ctx, packet)
-    message.packet = packet
-    @webSocket.send(socket, message)
+
+
+
+  midStart: (next) ->
+    await next()
+    @__webSocket.send(@socket, @__message)
+
+
+
+  midEnd: ->
+    packet = @__message.packet
+    packet = await @__call(@, packet)
+    @__message.packet = packet
 
 
 
