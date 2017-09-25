@@ -13,20 +13,6 @@ require('coffeescript/register')
 
   app = new Sai.App()
 
-  app.use(async function(next){
-    console.log('ssss1111');
-    await next()
-    console.log('ssss2222');
-  })
-
-  app.use(async function(next){
-    console.log(this.ioStack);
-    console.log('-=-=-=');
-    await helper.sleep(3000)
-    await next()
-    console.log('pppp');
-  })
-
   app.io('abc', async function(id, name){
     return 'lll'
   })
@@ -38,7 +24,9 @@ require('coffeescript/register')
   })
 
   app.method('getBooks', 'shop.findBook')
-  app.get('books/:id/:name', 'shop.findBook')
+  app.get('books/:id/:name', 'shop.findBook', {
+    desc: '获取图书'
+  })
 
   app.topic('timeline', function(a, b){
     return true

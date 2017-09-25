@@ -41,9 +41,15 @@
       font-size: 15px;
     }
 
-    td.proto .name{
+    td.proto .name,
+    td.proto .path{
       font-weight: 600;
       color: #07A1EE;
+    }
+
+    td.proto .method{
+      font-weight: 600;
+      color: #BBB;
     }
 
     td.proto .paramsString{
@@ -71,6 +77,16 @@
       <td class="desc">{{ desc }}</td>
     </tr>
   {{ /methods }}
+
+  {{ #gets }}
+    <tr>
+      <td class="proto">
+        <span class="method">{{ method }}</span>
+        <span class="path">{{ path }}</span>
+      </td>
+      <td class="desc">{{ desc }}</td>
+    </tr>
+  {{ /gets }}
   </table>
 
 </body>
