@@ -1,2 +1,7 @@
 require('coffeescript/register')
-module.export = require('./index.coffee')
+
+try{
+  module.exports = require('./index.coffee')
+}catch(error){
+  console.log(error);
+}

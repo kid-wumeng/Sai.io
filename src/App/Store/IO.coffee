@@ -1,8 +1,8 @@
 module.exports = class IO
 
-  constructor: (options) ->
-    @name = options.name
-    @func = options.func
+  constructor: (name, func) ->
+    @name = name
+    @func = func
 
 
   ### @Protected ###

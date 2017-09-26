@@ -3,8 +3,8 @@ require('coffeescript/register')
 ;(async()=>{try{
 
 
-  var Sai = require('./lib')
-  var helper = require('./lib/helper')
+  var Sai = require('./src')
+  var helper = require('./src/helper')
 
   Sai.catch((error)=>{
     console.log(error.message.red);

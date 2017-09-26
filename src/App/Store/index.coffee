@@ -29,7 +29,7 @@ module.exports = class Store
   # 注册io
   ##
   io: (name, func) =>
-    @ios[name] = new IO({name, func})
+    @ios[name] = new IO(name, func)
 
 
 
