@@ -6,7 +6,7 @@ exports.error = (ctx, error) =>
   if _.isString(error)
     error = { message: error }
 
-  keys  = ['code', 'message', 'data']
+  keys  = ['code', 'message', 'data', 'stack']
   error = _.pick(error, keys)
 
   error.ioChain = ctx.ioChain if ctx.ioChain.length

@@ -5,7 +5,7 @@ module.exports = class Method
 
   constructor: (path, io, options={}) ->
     @method = 'GET'
-    @path   = path
+    @path   = @formatPath(path)
     @keys   = []
     @reg    = pathToRegexp(@path, @keys)
     @io     = io
@@ -13,6 +13,16 @@ module.exports = class Method
     @params = options.params ? []
     @query  = options.query  ? []
     @data   = options.data   ? []
+
+
+
+  ### @Protected ###
+  # 调用get
+  ##
+  formatPath: (path) =>
+    if path[0] isnt '/'
+      path = '/' + path
+    return path
 
 
 

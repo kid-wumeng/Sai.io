@@ -11,6 +11,6 @@ module.exports = class IO
   call: (ctx, params) =>
     ctx.ioChain.push(@name)
     ctx.ioStack.push(@name)
-    result = await @func.call(ctx, params...)
+    result = @func.call(ctx, params...)
     ctx.ioStack.pop()
     return result

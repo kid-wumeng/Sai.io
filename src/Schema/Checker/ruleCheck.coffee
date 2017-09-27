@@ -10,5 +10,5 @@ module.exports = (store, value, name) ->
   try
     rule.check(value)
   catch error
-    error.message = "{{ #{name} }} #{error.message}"
+    error.message = "(#{name}) #{error.message}"
     throw error

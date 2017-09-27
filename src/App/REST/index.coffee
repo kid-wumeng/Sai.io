@@ -1,9 +1,10 @@
-_        = require('lodash')
-bluebird = require('bluebird')
-errors   = require('../../errors')
-assets   = require('../../assets')
-SaiJSON  = require('../../assets/SaiJSON')
-adapter  = require('../../assets/SaiJSONAdapter')
+_              = require('lodash')
+qs             = require('querystring')
+bluebird       = require('bluebird')
+errors         = require('../../errors')
+assets         = require('../../assets')
+SaiJSON        = require('../../assets/SaiJSON')
+adapter        = require('../../assets/SaiJSONAdapter')
 globalEventBus = require('../../assets/globalEventBus')
 
 
@@ -33,42 +34,37 @@ module.exports = class RPC
 
   invokeOne: (ctx, task) =>
     try
-      { route, params } = @match(task)
+      @splitPathAndQuery(task)
+      route = @match(task)
+      { params, query } = task
+      params.push(query)
       result = await route.call(ctx, params)
       return { result }
 
     catch error
       error = assets.error(ctx, error)
       globalEventBus.emit('error', error)
+      delete error.stack
       return { error }
 
 
 
-  match: (task) =>
-    for route in @getRoutes(task)
-      params = @matchEach(route, task)
-      if params
-        return { route, params }
+  splitPathAndQuery: (task) =>
+    [ path, queryString ] = task.path.split('?')
+    task.path = path
 
-    throw errors.ROUTE_NOT_FOUND(task.method, task.path)
-
-
-
-  matchEach: (route, task) =>
-    result = route.reg.exec(task.path)
-    if result
-      params = result.slice(1)
-      @formatNumberParams(params)
-      return params
+    if(queryString)
+      task.query = @parseQuery(queryString)
     else
-      return null
+      task.query = {}
 
 
 
-  formatNumberParams: (params) =>
-    for param, i in params
-      if /^\d+(?:\.\d+)?$/.test(param)
-        params[i] = parseFloat(param)
+  parseQuery: (queryString) =>
+    query = qs.parse(queryString)
+    for name, value of query
+      query[name] = @formatString(value)
+    return query
 
 
 
@@ -80,3 +76,33 @@ module.exports = class RPC
       when 'PATCH'  then @store.patchs
       when 'DELETE' then @store.deletes
       else []
+
+
+
+  match: (task) =>
+    for route in @getRoutes(task)
+      if @matchEach(route, task)
+        return route
+
+    throw errors.ROUTE_NOT_FOUND(task.method, task.path)
+
+
+
+  matchEach: (route, task) =>
+    result = route.reg.exec(task.path)
+    if result
+      params = result.slice(1)
+      params = params.map (param) => @formatString(param)
+      task.params = params
+      return true
+    else
+      task.params = []
+      return false
+
+
+
+  formatString: (string) =>
+    if /^\d+(?:\.\d+)?$/.test(string)
+      return parseFloat(string)
+    else
+      return string

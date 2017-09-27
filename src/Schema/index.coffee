@@ -1,3 +1,4 @@
+_       = require('lodash')
 Store   = require('./Store')
 Checker = require('./Checker')
 
@@ -11,8 +12,9 @@ module.exports = class Schema
   ### @Public ###
   # 验证数据
   ##
-  check: (data, path) =>
-    return new Checker(@store, data, path)
+  check: (datas, path) =>
+    return new Checker(@store, datas, path)
+
 
 
   ### @Public ###
@@ -23,9 +25,18 @@ module.exports = class Schema
     return @
 
 
+
   ### @Public ###
   # 定制格式
   ##
   format: (name, check) =>
     @store.format(name, check)
     return @
+
+
+
+  ### @Public ###
+  # 过滤属性
+  ##
+  filter: (data={}, keys=[]) =>
+    return _.pick(data, keys)
