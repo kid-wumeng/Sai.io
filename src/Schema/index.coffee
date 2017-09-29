@@ -36,7 +36,29 @@ module.exports = class Schema
 
 
   ### @Public ###
-  # 过滤属性
+  # 挑选属性
   ##
-  filter: (data={}, keys=[]) =>
-    return _.pick(data, keys)
+  pick: (datas=[], keys=[]) =>
+    if _.isString(keys)
+      keys = keys.split(/\s+/)
+
+    if Array.isArray(datas)
+      return datas.map (data) -> _.pick(data, keys)
+    else
+      data = datas
+      return _.pick(data, keys)
+
+
+
+  ### @Public ###
+  # 排除属性
+  ##
+  omit: (datas=[], keys=[]) =>
+    if _.isString(keys)
+      keys = keys.split(/\s+/)
+
+    if Array.isArray(datas)
+      return datas.map (data) -> _.omit(data, keys)
+    else
+      data = datas
+      return _.omit(data, keys)

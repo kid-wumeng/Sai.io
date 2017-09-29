@@ -2,14 +2,13 @@ jwt    = require('jsonwebtoken')
 errors = require('../errors')
 
 
-
 module.exports = class JSONWebToken
 
 
-
-  encode: (payload, secret, maxAge) =>
-    return jwt.sign(payload, secret, maxAge)
-
+  encode: (payload, secret, maxAge=0) =>
+    return jwt.sign(payload, secret, {
+      expiresIn: maxAge
+    })
 
 
   decode: (token, secret) =>

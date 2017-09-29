@@ -213,10 +213,10 @@ module.exports = class Collection
   formatModifier: (modifier={}) =>
     # modifier也许会被开发者复用
     # 为了避免副作用，每次都应该生成新副本
-    modifier = Object.assign({}, modifier, {
-      $set:
-        updateDate: new Date()
-    })
+    modifier = Object.assign({}, modifier)
+
+    modifier.$set ?= {}
+    modifier.$set.updateDate = new Date()
 
     for key, value of modifier
       if key[0] is '$'
@@ -230,6 +230,52 @@ module.exports = class Collection
         delete modifier[key]
 
     return modifier
+
+
+
+  ### @Public ###
+  # 单文档递增
+  ##
+  inc: (query, key, n=1, options) =>
+    # @TODO 多态
+    modifier = {}
+    modifier.$inc = {}
+    modifier.$inc[key] = n
+    return await @update(query, modifier, options)
+
+
+
+  ### @Public ###
+  # 多文档递增
+  ##
+  incMany: (query, key, n=1, options) =>
+    modifier = {}
+    modifier.$inc = {}
+    modifier.$inc[key] = n
+    return await @updateMany(query, modifier, options)
+
+
+
+  ### @Public ###
+  # 单文档递减
+  ##
+  dec: (query, key, n=1, options) =>
+    # @TODO 多态
+    modifier = {}
+    modifier.$inc = {}
+    modifier.$inc[key] = -n
+    return await @update(query, modifier, options)
+
+
+
+  ### @Public ###
+  # 多文档递减
+  ##
+  decMany: (query, key, n=1, options) =>
+    modifier = {}
+    modifier.$inc = {}
+    modifier.$inc[key] = -n
+    return await @updateMany(query, modifier, options)
 
 
 

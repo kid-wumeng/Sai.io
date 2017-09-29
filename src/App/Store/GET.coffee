@@ -20,8 +20,8 @@ module.exports = class Method
   # 调用get
   ##
   formatPath: (path) =>
-    if path[0] isnt '/'
-      path = '/' + path
+    if path[0] is '/'
+      path = path.slice(1)
     return path
 
 

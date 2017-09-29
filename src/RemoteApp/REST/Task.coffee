@@ -12,8 +12,8 @@ module.exports = class Task extends Task
 
 
   formatPath: (path) =>
-    if path[0] isnt '/'
-      path = '/' + path
+    if path[0] is '/'
+      path = path.slice(1)
     return path
 
 
