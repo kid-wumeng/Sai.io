@@ -10,9 +10,10 @@ module.exports = class Context
 
   create: (ctx={}) =>
     Object.assign(ctx, @store.mounts)
-    ctx.call = @call.bind(ctx, @store.ios)
+    ctx.call    = @call.bind(ctx, @store.ios)
     ctx.ioChain = []
     ctx.ioStack = []
+    ctx.io      = @bindIOs(ctx)
     return ctx
 
 
@@ -22,3 +23,14 @@ module.exports = class Context
       return io.call(@, params)
     else
       throw errors.IO_NOT_FOUND(name)
+
+
+  bindIOs: (ctx) =>
+    dict = {}
+    ios = @store.ios
+    for name, io of ios
+      _.set dict, name, do
+        (name) ->
+          (params...) ->
+            ctx.call(name, params...)
+    return dict
