@@ -30,8 +30,13 @@ module.exports = class RemoteApp
     @realtime = new Realtime(@client, @store)
 
 
+  # call: (method, params...) ->
+  #   return @rpc.call(method, params)
+
+
   call: (method, params...) ->
-    return @rpc.call(method, params)
+    return new Promise (resolve, reject) => 
+      @rpc.call(method, params).done(resolve).fail(reject)
 
 
 

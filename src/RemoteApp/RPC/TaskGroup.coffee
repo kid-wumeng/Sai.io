@@ -54,11 +54,7 @@ module.exports = class TaskGroup
 
 
 
-  complete: (packet) =>
-    # @TODO 支持通知后需要比对id来对应触发
-    for task, i in @tasks
-      task.complete(packet[i])
-
+  complete: (tasks) =>
     done() for done in @dones
 
 

@@ -34,7 +34,7 @@ module.exports = class RPC
         next = tasks[i+1]
         do (next) => task.always => @send(next)
       else
-        task.always => taskGroup.complete()
+        task.always => taskGroup.complete(tasks)
 
     @send(tasks[0])
     return taskGroup

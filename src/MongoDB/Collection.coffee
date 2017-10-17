@@ -194,8 +194,8 @@ module.exports = class Collection
   update: (query, modifier, options) =>
     query    = @formatQuery(query, options)
     modifier = @formatModifier(modifier)
-    result   = await @col.updateOne(query, modifier)
-    return result.modifiedCount
+    result   = await @col.findOneAndUpdate(query, modifier, {returnOriginal: false})
+    return result.value
 
 
 
