@@ -4,7 +4,7 @@
 
 exports.isFile = (value) ->
   return value instanceof Buffer
-
+  
 
 
 exports.encodeFile = (buffer, callback) ->

@@ -33,6 +33,14 @@ module.exports = class MongoDB
 
 
 
+  ### @Public ###
+  # 删除数据库
+  ##
+  drop: =>
+    await @db.dropDatabase()
+
+
+
   formatUri: =>
     # uri格式参考：
     # https://docs.mongodb.com/manual/reference/connection-string/

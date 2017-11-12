@@ -144,9 +144,11 @@ module.exports = class Collection
   # 单文档插入
   ##
   insert: (doc) =>
-    if(@idStore)
+    if(@idStore and !doc?.id)
       doc.id = await @makeIDs()
-    doc.createDate = new Date()
+
+    if(!doc?.createDate)
+      doc.createDate = new Date()
 
     result = await @col.insertOne(doc)
     doc    = result.ops[0]
@@ -283,10 +285,12 @@ module.exports = class Collection
   # 单文档软删除
   ##
   remove: (query) =>
-    count = await @update(query, {
-      removeDate: new Date()
+    query  = @formatQuery(query)
+    result = await @col.findOneAndUpdate(query, {
+      $set:
+        removeDate: new Date()
     })
-    return count
+    return result.value
 
 
 
